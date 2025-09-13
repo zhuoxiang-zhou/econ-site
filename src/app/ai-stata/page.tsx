@@ -203,7 +203,7 @@ estimates store ols_robust
 * Effect size interpretation for log wages
 * If wage is log-transformed, uncomment:
 * regress lnwage educ exper, vce(robust)
-* display &quot;Return to schooling (%) = &quot; 100*(exp(_b[educ])-1)`
+* display "Return to schooling (%) = " 100*(exp(_b[educ])-1)`
   },
   {
     title: "Instrumental Variables (2SLS)",
@@ -365,14 +365,14 @@ const promptPatterns = [
 ];
 
 const qcChecklist = [
-  "✅ Variable names in code match dataset exactly",
-  "✅ Sample restrictions are appropriate and documented", 
-  "✅ Standard error choice matches research design",
-  "✅ IV diagnostics: first-stage F-stat > 10",
-  "✅ DiD: check pre-trends with event study",
-  "✅ RD: validate bandwidth and manipulation tests",
-  "✅ Panel: test for serial correlation and choose FE vs RE",
-  "✅ Reproducibility: set seed, version, explicit paths"
+  "Variable names in code match dataset exactly",
+  "Sample restrictions are appropriate and documented", 
+  "Standard error choice matches research design",
+  "IV diagnostics: first-stage F-stat > 10",
+  "DiD: check pre-trends with event study",
+  "RD: validate bandwidth and manipulation tests",
+  "Panel: test for serial correlation and choose FE vs RE",
+  "Reproducibility: set seed, version, explicit paths"
 ];
 
 /* ---------- Main component ---------- */
@@ -443,7 +443,7 @@ export default function ImprovedAIStataGuide() {
                   </ul>
                 </div>
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-slate-800">What You'll Learn</h3>
+                  <h3 className="font-semibold text-slate-800">What You&apos;ll Learn</h3>
                   <ul className="space-y-2 text-slate-700">
                     <li className="flex items-start gap-2">
                       <span className="text-blue-500 mt-1">📝</span>
@@ -597,7 +597,7 @@ export default function ImprovedAIStataGuide() {
                   {qcChecklist.map((item, i) => (
                     <div key={i} className="flex items-start gap-2 p-2 bg-white rounded border border-green-200">
                       <input type="checkbox" className="mt-1 w-4 h-4 text-green-600 rounded" />
-                      <span className="text-sm text-slate-700">{item}</span>
+                      <span className="text-sm text-slate-700">✅ {item}</span>
                     </div>
                   ))}
                 </div>
