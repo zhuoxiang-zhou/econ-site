@@ -376,7 +376,7 @@ estat gof, group(10)`;
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 mb-4">
             <Pill variant="accent">📚 Complete Guide</Pill>
-            <Pill>Updated 2024</Pill>
+            <Pill>Updated 2025</Pill>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-slate-800 mb-4 leading-tight">
             How to learn Stata with your generative AI?
