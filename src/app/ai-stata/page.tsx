@@ -379,11 +379,10 @@ estat gof, group(10)`;
             <Pill>Updated 2024</Pill>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-slate-800 mb-4 leading-tight">
-            AI → Stata: Econometrics Prompting
+            How to learn Stata with your generative AI?
           </h1>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-            Transform research questions into reliable Stata code using structured prompts, 
-            ready-made recipes, and systematic verification.
+            A practical guide to writing prompts that generate clean, reproducible Stata code for regression and causal inference, with a focus on applied econometrics.
           </p>
           <div className="flex flex-wrap justify-center gap-2 mt-6">
             <Pill>OLS • IV • DiD • RD • FE</Pill>
