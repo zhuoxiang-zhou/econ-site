@@ -467,7 +467,7 @@ export default function EnhancedResourcesPage() {
                 <li>Start with Wooldridge textbook</li>
                 <li>Learn Stata or R for implementation</li>
                 <li>Practice with Our World in Data datasets</li>
-                <li>Read Mastering 'Metrics for intuition</li>
+                <li>Read Mastering &apos;Metrics for intuition</li>
                 <li>Explore AER papers for real applications</li>
               </ol>
             </div>
@@ -476,7 +476,7 @@ export default function EnhancedResourcesPage() {
               <h3 className="font-semibold text-green-700 mb-3">🎓 Graduate Path</h3>
               <ol className="list-decimal list-inside space-y-1 text-sm text-green-700">
                 <li>Master Mostly Harmless Econometrics</li>
-                <li>Take Brady Neal's Causal Inference course</li>
+                <li>Take Brady Neal&apos;s Causal Inference course</li>
                 <li>Learn advanced Stata packages (reghdfe, rdrobust)</li>
                 <li>Read Journal of Econometrics methodological papers</li>
                 <li>Practice replication using Harvard Dataverse</li>
