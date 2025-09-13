@@ -3,7 +3,6 @@
 import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 
-/* ---------- Enhanced UI primitives ---------- */
 function Pill({ children, variant = "default" }: { children: React.ReactNode; variant?: "default" | "accent" }) {
   const baseClasses = "inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors";
   const variantClasses = {
@@ -57,7 +56,6 @@ function CodeBlock({ code, caption, language = "stata" }: { code: string; captio
   );
 }
 
-/* ---------- Navigation with active section tracking ---------- */
 function TableOfContents({ sections }: { sections: { id: string; label: string; description?: string }[] }) {
   const [activeSection, setActiveSection] = useState("overview");
 
@@ -129,7 +127,6 @@ function TableOfContents({ sections }: { sections: { id: string; label: string; 
   );
 }
 
-/* ---------- Enhanced Section component ---------- */
 function Section({ 
   id, 
   title, 
@@ -161,8 +158,18 @@ function Section({
   );
 }
 
-/* ---------- Content data ---------- */
-const promptTemplate = `Role: You are a careful Stata tutor for undergraduate econometrics.
+export default function AIStataGuide() {
+  const sections = useMemo(() => [
+    { id: "overview", label: "Overview", description: "Introduction and key principles" },
+    { id: "rules", label: "Golden Rules", description: "Essential guidelines for prompting" },
+    { id: "template", label: "Prompt Template", description: "Copy-paste template for structured prompts" },
+    { id: "recipes", label: "Code Recipes", description: "Ready-to-use Stata code examples" },
+    { id: "patterns", label: "Prompt Patterns", description: "Common prompt modifications" },
+    { id: "checklist", label: "QC Checklist", description: "Verification steps before publishing" },
+    { id: "resources", label: "Resources", description: "Additional tools and references" }
+  ], []);
+
+  const promptTemplate = `Role: You are a careful Stata tutor for undergraduate econometrics.
 
 Context:
 - Study question and identification strategy: <1–2 lines>
@@ -182,11 +189,7 @@ Task:
 
 Return: A single code block.`;
 
-const codeRecipes = [
-  {
-    title: "OLS with Robust Standard Errors",
-    description: "Basic linear regression with heteroskedasticity-robust standard errors",
-    code: `* OLS with robust SEs
+  const olsCode = `* OLS with robust SEs
 clear all
 use "wagepanel.dta", clear
 
@@ -203,12 +206,9 @@ estimates store ols_robust
 * Effect size interpretation for log wages
 * If wage is log-transformed, uncomment:
 * regress lnwage educ exper, vce(robust)
-* display "Return to schooling (%) = " 100*(exp(_b[educ])-1)`
-  },
-  {
-    title: "Instrumental Variables (2SLS)",
-    description: "Two-stage least squares with endogenous regressors",
-    code: `* IV / 2SLS: wage on educ instrumented by quarter-of-birth
+* display "Return to schooling (%) = " 100*(exp(_b[educ])-1)`;
+
+  const ivCode = `* IV / 2SLS: wage on educ instrumented by quarter-of-birth
 clear all
 use "wage_iv.dta", clear
 
@@ -224,12 +224,9 @@ estat firststage
 * Rule of thumb: F-stat > 10 for strong instrument
 
 * Over-identification test (if multiple instruments)
-* estat overid`
-  },
-  {
-    title: "Difference-in-Differences",
-    description: "Treatment effect estimation with before/after and treatment/control groups",
-    code: `* Difference-in-Differences estimation
+* estat overid`;
+
+  const didCode = `* Difference-in-Differences estimation
 clear all
 use "did_sample.dta", clear
 
@@ -247,12 +244,9 @@ display "Treatment effect: " _b[1.treat#1.post]
 * reghdfe y i.year##i.treat, absorb(id) vce(cluster id)
 
 * Pre-trend test (parallel trends assumption)
-* Keep only pre-treatment periods and test trend differences`
-  },
-  {
-    title: "Regression Discontinuity",
-    description: "Sharp RD design around a cutoff point",
-    code: `* Sharp Regression Discontinuity around cutoff c=50
+* Keep only pre-treatment periods and test trend differences`;
+
+  const rdCode = `* Sharp Regression Discontinuity around cutoff c=50
 clear all
 use "rd_sample.dta", clear
 
@@ -274,12 +268,9 @@ generate centered = running_var - 50
 regress outcome i.D c.centered##i.D, vce(robust)
 
 * Treatment effect is coefficient on D
-lincom 1.D`
-  },
-  {
-    title: "Panel Fixed Effects",
-    description: "Two-way fixed effects with clustered standard errors",
-    code: `* Panel Fixed Effects with clustering
+lincom 1.D`;
+
+  const feCode = `* Panel Fixed Effects with clustering
 clear all
 use "panel_data.dta", clear
 
@@ -302,12 +293,9 @@ areg wage educ exper i.year, absorb(id) vce(cluster id)
 * estimates store fe
 * xtreg wage educ exper, re  
 * estimates store re
-* hausman fe re`
-  },
-  {
-    title: "Logistic Regression",
-    description: "Binary outcome models with marginal effects",
-    code: `* Logistic regression for binary outcomes
+* hausman fe re`;
+
+  const logitCode = `* Logistic regression for binary outcomes
 clear all
 use "binary_outcome.dta", clear
 
@@ -325,72 +313,66 @@ margins, at(educ=(10(2)18)) atmeans
 
 * Goodness of fit
 estat classification
-estat gof, group(10)`
-  }
-];
+estat gof, group(10)`;
 
-const promptPatterns = [
-  {
-    category: "Scope Control",
-    patterns: [
-      "Return one Stata code block only; robust SEs; no graphs; minimal comments.",
-      "Include data loading, estimation, and basic diagnostics only.",
-      "Skip exploratory analysis; focus on the main regression."
-    ]
-  },
-  {
-    category: "Schema Matching", 
-    patterns: [
-      "Match these exact variable names: [paste describe output or list]",
-      "Use my dataset structure: wage (numeric), educ (numeric), id (string).",
-      "Variables are already cleaned; no missing value handling needed."
-    ]
-  },
-  {
-    category: "Estimator Swapping",
-    patterns: [
-      "Rewrite using ivregress 2sls with instrument Z; include first-stage diagnostics.",
-      "Convert to fixed effects: reghdfe with unit and year absorption.",
-      "Change to logistic regression with marginal effects."
-    ]
-  },
-  {
-    category: "Standard Errors",
-    patterns: [
-      "Cluster at id level; two-way FE for id & year.",
-      "Use robust standard errors for cross-sectional data.",
-      "Bootstrap standard errors with 1000 replications."
-    ]
-  }
-];
+  const codeRecipes = [
+    { title: "OLS with Robust Standard Errors", description: "Basic linear regression with heteroskedasticity-robust standard errors", code: olsCode },
+    { title: "Instrumental Variables (2SLS)", description: "Two-stage least squares with endogenous regressors", code: ivCode },
+    { title: "Difference-in-Differences", description: "Treatment effect estimation with before/after and treatment/control groups", code: didCode },
+    { title: "Regression Discontinuity", description: "Sharp RD design around a cutoff point", code: rdCode },
+    { title: "Panel Fixed Effects", description: "Two-way fixed effects with clustered standard errors", code: feCode },
+    { title: "Logistic Regression", description: "Binary outcome models with marginal effects", code: logitCode }
+  ];
 
-const qcChecklist = [
-  "Variable names in code match dataset exactly",
-  "Sample restrictions are appropriate and documented", 
-  "Standard error choice matches research design",
-  "IV diagnostics: first-stage F-stat > 10",
-  "DiD: check pre-trends with event study",
-  "RD: validate bandwidth and manipulation tests",
-  "Panel: test for serial correlation and choose FE vs RE",
-  "Reproducibility: set seed, version, explicit paths"
-];
+  const promptPatterns = [
+    {
+      category: "Scope Control",
+      patterns: [
+        "Return one Stata code block only; robust SEs; no graphs; minimal comments.",
+        "Include data loading, estimation, and basic diagnostics only.",
+        "Skip exploratory analysis; focus on the main regression."
+      ]
+    },
+    {
+      category: "Schema Matching", 
+      patterns: [
+        "Match these exact variable names: [paste describe output or list]",
+        "Use my dataset structure: wage (numeric), educ (numeric), id (string).",
+        "Variables are already cleaned; no missing value handling needed."
+      ]
+    },
+    {
+      category: "Estimator Swapping",
+      patterns: [
+        "Rewrite using ivregress 2sls with instrument Z; include first-stage diagnostics.",
+        "Convert to fixed effects: reghdfe with unit and year absorption.",
+        "Change to logistic regression with marginal effects."
+      ]
+    },
+    {
+      category: "Standard Errors",
+      patterns: [
+        "Cluster at id level; two-way FE for id & year.",
+        "Use robust standard errors for cross-sectional data.",
+        "Bootstrap standard errors with 1000 replications."
+      ]
+    }
+  ];
 
-/* ---------- Main component ---------- */
-export default function ImprovedAIStataGuide() {
-  const sections = useMemo(() => [
-    { id: "overview", label: "Overview", description: "Introduction and key principles" },
-    { id: "rules", label: "Golden Rules", description: "Essential guidelines for prompting" },
-    { id: "template", label: "Prompt Template", description: "Copy-paste template for structured prompts" },
-    { id: "recipes", label: "Code Recipes", description: "Ready-to-use Stata code examples" },
-    { id: "patterns", label: "Prompt Patterns", description: "Common prompt modifications" },
-    { id: "checklist", label: "QC Checklist", description: "Verification steps before publishing" },
-    { id: "resources", label: "Resources", description: "Additional tools and references" }
-  ], []);
+  const qcChecklist = [
+    "Variable names in code match dataset exactly",
+    "Sample restrictions are appropriate and documented", 
+    "Standard error choice matches research design",
+    "IV diagnostics: first-stage F-stat > 10",
+    "DiD: check pre-trends with event study",
+    "RD: validate bandwidth and manipulation tests",
+    "Panel: test for serial correlation and choose FE vs RE",
+    "Reproducibility: set seed, version, explicit paths"
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Hero Section */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 mb-4">
             <Pill variant="accent">📚 Complete Guide</Pill>
@@ -410,15 +392,11 @@ export default function ImprovedAIStataGuide() {
           </div>
         </div>
 
-        {/* Main Layout: Sticky TOC + Content */}
         <div className="grid gap-8 lg:grid-cols-[280px,1fr]">
-          {/* Sticky Table of Contents */}
           <TableOfContents sections={sections} />
 
-          {/* Main Content */}
           <div className="space-y-8">
             
-            {/* Overview */}
             <Section 
               id="overview"
               title="Getting Started"
@@ -443,7 +421,7 @@ export default function ImprovedAIStataGuide() {
                   </ul>
                 </div>
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-slate-800">What You&apos;ll Learn</h3>
+                  <h3 className="font-semibold text-slate-800">What You Will Learn</h3>
                   <ul className="space-y-2 text-slate-700">
                     <li className="flex items-start gap-2">
                       <span className="text-blue-500 mt-1">📝</span>
@@ -462,7 +440,6 @@ export default function ImprovedAIStataGuide() {
               </div>
             </Section>
 
-            {/* Golden Rules */}
             <Section 
               id="rules"
               title="Golden Rules"
@@ -508,7 +485,6 @@ export default function ImprovedAIStataGuide() {
               </div>
             </Section>
 
-            {/* Prompt Template */}
             <Section 
               id="template"
               title="Prompt Template"
@@ -533,7 +509,6 @@ export default function ImprovedAIStataGuide() {
               </div>
             </Section>
 
-            {/* Code Recipes */}
             <Section 
               id="recipes"
               title="Ready-to-Use Code Recipes"
@@ -557,7 +532,6 @@ export default function ImprovedAIStataGuide() {
               </div>
             </Section>
 
-            {/* Prompt Patterns */}
             <Section 
               id="patterns"
               title="Prompt Modification Patterns"
@@ -573,7 +547,7 @@ export default function ImprovedAIStataGuide() {
                     <ul className="space-y-2">
                       {category.patterns.map((pattern, j) => (
                         <li key={j} className="text-sm text-slate-700 italic bg-white p-2 rounded border-l-2 border-blue-200">
-                          &ldquo;{pattern}&rdquo;
+                          {pattern}
                         </li>
                       ))}
                     </ul>
@@ -582,7 +556,6 @@ export default function ImprovedAIStataGuide() {
               </div>
             </Section>
 
-            {/* QC Checklist */}
             <Section 
               id="checklist"
               title="Quality Control Checklist"
@@ -604,7 +577,6 @@ export default function ImprovedAIStataGuide() {
               </div>
             </Section>
 
-            {/* Resources */}
             <Section 
               id="resources"
               title="Additional Resources"
@@ -641,7 +613,6 @@ export default function ImprovedAIStataGuide() {
               </div>
             </Section>
 
-            {/* Footer */}
             <div className="text-center py-8 text-sm text-slate-500">
               <Link href="/labs" className="text-blue-600 hover:underline font-medium">
                 ← Back to Labs
