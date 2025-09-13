@@ -155,24 +155,24 @@ const qcChecklist = [
 ];
 
 const recipes = [
-  { title: "OLS + robust SEs", code: olsRobust },
-  { title: "IV / 2SLS with first-stage", code: iv2sls },
-  { title: "Difference-in-Differences", code: did },
-  { title: "Regression Discontinuity", code: rd },
-  { title: "Panel FE + clustered SEs", code: fePanel },
+  { id: "r-ols", title: "OLS + robust SEs", code: olsRobust },
+  { id: "r-iv", title: "IV / 2SLS with first-stage", code: iv2sls },
+  { id: "r-did", title: "Difference-in-Differences", code: did },
+  { id: "r-rd", title: "Regression Discontinuity", code: rd },
+  { id: "r-fe", title: "Panel FE + clustered SEs", code: fePanel },
 ];
 
 /* ---------- page ---------- */
 export default function AIStataGuide() {
   const toc = useMemo(
     () => [
-      { id: "top", label: "Overview" },
-      { id: "rules", label: "Golden Rules" },
-      { id: "template", label: "Prompt Template" },
-      { id: "recipes", label: "Common Tasks" },
-      { id: "patterns", label: "Prompt Patterns" },
-      { id: "qc", label: "QC Checklist" },
-      { id: "extras", label: "Extras" },
+      { id: "top", label: "Overview", icon: "🏁" },
+      { id: "rules", label: "Rules", icon: "📜" },
+      { id: "template", label: "Template", icon: "🧩" },
+      { id: "recipes", label: "Tasks", icon: "🛠️" },
+      { id: "patterns", label: "Patterns", icon: "🔁" },
+      { id: "qc", label: "QC", icon: "✅" },
+      { id: "extras", label: "Extras", icon: "✨" },
     ],
     []
   );
@@ -198,8 +198,7 @@ export default function AIStataGuide() {
             AI → Stata: Prompting for Econometrics
           </h1>
           <p className="mt-3 max-w-3xl text-neutral-700">
-            Learn to turn clear problem statements into reliable Stata code. Focus on scope,
-            schema, and reproducibility—then verify with a quick checklist.
+            Turn clear problem statements into reliable Stata code. Focus on scope, schema, and reproducibility—then verify with a quick checklist.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-2">
             <Pill>Stata</Pill>
@@ -209,58 +208,56 @@ export default function AIStataGuide() {
         </div>
       </section>
 
-      {/* Grid: sticky TOC + content */}
-      <div className="mt-10 grid gap-6 md:grid-cols-[220px,1fr]">
-        {/* TOC */}
-        <nav className="md:sticky md:top-24 h-max rounded-2xl border border-black/10 bg-white p-3">
-          <div className="text-[11px] uppercase tracking-wide text-neutral-500 px-2 mb-1">
-            Sections
-          </div>
-          <ul className="space-y-1 text-sm">
+      {/* Mobile mini-nav (horizontal) */}
+      <div className="mt-6 md:hidden">
+        <div className="flex flex-wrap gap-2">
+          {toc.map((t) => (
+            <a
+              key={t.id}
+              href={`#${t.id}`}
+              className="text-xs rounded-full border border-black/10 bg-white px-3 py-1"
+            >
+              {t.icon} {t.label}
+            </a>
+          ))}
+        </div>
+      </div>
+
+      {/* Grid: thin sticky sidebar + content */}
+      <div className="mt-8 grid gap-6 md:grid-cols-[56px,1fr]">
+        {/* Thin vertical sidebar (desktop only) */}
+        <aside
+          className="sticky top-24 hidden md:block h-max rounded-2xl border border-black/10 bg-white"
+          aria-label="Section navigation"
+        >
+          <ul className="flex flex-col items-center gap-2 py-3">
             {toc.map((t) => (
               <li key={t.id}>
                 <a
                   href={`#${t.id}`}
-                  className="block rounded-md px-2 py-1 hover:bg-black/5"
+                  title={t.label}
+                  aria-label={t.label}
+                  className="block h-9 w-9 rounded-full border border-black/10 bg-white grid place-items-center hover:shadow-sm hover:border-black/20 transition"
                 >
-                  {t.label}
+                  <span className="text-base" aria-hidden>
+                    {t.icon}
+                  </span>
                 </a>
               </li>
             ))}
           </ul>
-
-          <div className="mt-4 border-t border-black/5 pt-3 px-2 text-[12px] text-neutral-600">
-            Prefer a quick start? Jump to{" "}
-            <a href="#recipes" className="text-blue-600 hover:underline">
-              Common Tasks
-            </a>
-            .
-          </div>
-        </nav>
+        </aside>
 
         {/* Content */}
         <div className="space-y-10">
           <section id="rules" className="rounded-2xl border border-black/10 bg-white p-5">
             <Section id="rules" title="Golden Rules" badge="Read before prompting" />
             <ul className="list-disc pl-5 space-y-1 text-sm">
-              <li>
-                Describe the <strong>data schema</strong> (names, types, meaning).
-              </li>
-              <li>
-                State the <strong>design</strong> (OLS / IV / RD / DiD / FE) and{" "}
-                <strong>SE choice</strong>.
-              </li>
-              <li>
-                Ask for <strong>code only</strong> with concise comments; avoid interactive
-                prompts and placeholders.
-              </li>
-              <li>
-                Keep it <strong>reproducible</strong>: set seed, pin packages (e.g.,{" "}
-                <code>reghdfe</code>), save a do-file.
-              </li>
-              <li>
-                <strong>Verify</strong> with the checklist before using results in reports.
-              </li>
+              <li>Describe the <strong>data schema</strong> (names, types, meaning).</li>
+              <li>State the <strong>design</strong> (OLS / IV / RD / DiD / FE) and <strong>SE choice</strong>.</li>
+              <li>Ask for <strong>code only</strong> with concise comments; avoid interactive prompts and placeholders.</li>
+              <li>Keep it <strong>reproducible</strong>: set seed, pin packages (e.g., <code>reghdfe</code>), save a do-file.</li>
+              <li><strong>Verify</strong> with the checklist before using results in reports.</li>
             </ul>
           </section>
 
@@ -275,9 +272,9 @@ export default function AIStataGuide() {
           <section id="recipes" className="rounded-2xl border border-black/10 bg-white p-5">
             <Section id="recipes" title="Common Tasks — Copy-ready Stata" />
             <div className="grid md:grid-cols-2 gap-4">
-              {recipes.map((r, idx) => (
+              {recipes.map((r) => (
                 <div
-                  key={idx}
+                  key={r.id}
                   className="rounded-xl border border-black/10 bg-white/70 p-3 hover:shadow-sm transition"
                 >
                   <div className="mb-2 flex items-center justify-between">
@@ -293,26 +290,11 @@ export default function AIStataGuide() {
           <section id="patterns" className="rounded-2xl border border-black/10 bg-white p-5">
             <Section id="patterns" title="Prompt Patterns (for revisions)" />
             <ul className="list-disc pl-5 space-y-2 text-sm">
-              <li>
-                <strong>Tighten scope:</strong>{" "}
-                <em>Return one Stata code block; robust SEs; no graphs; minimal comments.</em>
-              </li>
-              <li>
-                <strong>Match my schema:</strong> paste a short table of names/types (or{" "}
-                <code>describe</code> output).
-              </li>
-              <li>
-                <strong>Swap estimators:</strong>{" "}
-                <em>Rewrite using <code>ivregress 2sls</code> with instrument Z; include
-                first-stage diagnostics.</em>
-              </li>
-              <li>
-                <strong>Panel SEs:</strong> <em>Cluster at id; two-way FE for id & year.</em>
-              </li>
-              <li>
-                <strong>Minimal cleaning:</strong>{" "}
-                <em>Include only necessary recodes; avoid drops unless justified.</em>
-              </li>
+              <li><strong>Tighten scope:</strong> <em>Return one Stata code block; robust SEs; no graphs; minimal comments.</em></li>
+              <li><strong>Match my schema:</strong> paste a short table of names/types (or <code>describe</code> output).</li>
+              <li><strong>Swap estimators:</strong> <em>Rewrite using <code>ivregress 2sls</code> with instrument Z; include first-stage diagnostics.</em></li>
+              <li><strong>Panel SEs:</strong> <em>Cluster at id; two-way FE for id & year.</em></li>
+              <li><strong>Minimal cleaning:</strong> <em>Include only necessary recodes; avoid drops unless justified.</em></li>
             </ul>
           </section>
 
@@ -328,31 +310,20 @@ export default function AIStataGuide() {
           <section id="extras" className="rounded-2xl border border-black/10 bg-white p-5">
             <Section id="extras" title="Extras" />
             <ul className="list-disc pl-5 space-y-1 text-sm">
-              <li>
-                <strong>Packages:</strong> <code>reghdfe</code> (two-way FE),{" "}
-                <code>rdrobust</code> (RD), <code>estout / esttab</code> (tables).
-              </li>
-              <li>
-                <strong>Do-file header:</strong>{" "}
-                <em>clear all; version; set more off; set seed;</em> define project-root paths.
-              </li>
-              <li>
-                <strong>Ethics:</strong> you are responsible for verification; cite your own
-                code, not the model.
-              </li>
+              <li><strong>Packages:</strong> <code>reghdfe</code> (two-way FE), <code>rdrobust</code> (RD), <code>estout</code> / <code>esttab</code> (tables).</li>
+              <li><strong>Do-file header:</strong> <em>clear all; version; set more off; set seed;</em> define project-root paths.</li>
+              <li><strong>Ethics:</strong> you are responsible for verification; cite your own code, not the model.</li>
             </ul>
             <div className="mt-4 text-xs text-neutral-500">
-              Tip: keep a <code>/code</code> folder with dated do-files and a minimal{" "}
-              <code>README.md</code> describing data sources and steps.
+              Tip: keep a <code>/code</code> folder with dated do-files and a minimal <code>README.md</code> describing data sources and steps.
+            </div>
+            <div className="mt-3 text-xs text-neutral-500">
+              <Link href="/resources" className="text-blue-600 hover:underline">
+                → See Resources
+              </Link>{" "}
+              for textbooks and data portals.
             </div>
           </section>
-
-          <div className="pt-2 text-xs text-neutral-500">
-            <Link href="/resources" className="text-blue-600 hover:underline">
-              → See Resources
-            </Link>{" "}
-            for textbooks and data portals.
-          </div>
         </div>
       </div>
     </main>
