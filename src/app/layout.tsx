@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 RegLabs
               </Link>
               <Link href="/ai-stata" className="hover:opacity-80">
-                AI
+                AI+Stata
               </Link>
               <Link href="/resources" className="hover:opacity-80">
                 Resources

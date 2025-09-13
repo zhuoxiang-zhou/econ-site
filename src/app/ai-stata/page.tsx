@@ -1,10 +1,29 @@
-// src/app/page.tsx
+// src/app/ai-stata/page.tsx
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
+import Link from "next/link";
 
-/* ------------------------- small UI helpers ------------------------- */
+/* ---------- tiny UI primitives ---------- */
+function Pill({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-black/10 bg-white px-2.5 py-1 text-[11px] font-medium shadow-sm">
+      {children}
+    </span>
+  );
+}
+
+function Section({ id, title, badge }: { id: string; title: string; badge?: string }) {
+  return (
+    <div id={id} className="scroll-mt-24">
+      <div className="mb-3 flex items-center gap-2">
+        <h2 className="text-xl font-semibold">{title}</h2>
+        {badge && <Pill>{badge}</Pill>}
+      </div>
+    </div>
+  );
+}
+
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   return (
@@ -14,274 +33,328 @@ function CopyButton({ text }: { text: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 1200);
       }}
-      className="text-xs px-2 py-1 rounded-md border border-black/10 hover:shadow-sm transition"
+      className="text-[11px] px-2 py-1 rounded-md border border-black/10 hover:border-black/20 hover:shadow-sm transition"
       aria-label="Copy to clipboard"
+      title="Copy to clipboard"
     >
-      {copied ? "Copied!" : "Copy"}
+      {copied ? "Copied" : "Copy"}
     </button>
   );
 }
 
-function CodeBlock({ code }: { code: string }) {
+function CodeBlock({ code, caption }: { code: string; caption?: string }) {
   return (
-    <div className="relative rounded-xl border bg-neutral-50">
-      <pre className="text-sm overflow-x-auto rounded-xl p-3">
+    <figure className="relative rounded-xl border border-black/10 bg-neutral-50">
+      <figcaption className="flex items-center justify-between px-3 py-2 text-[11px] text-neutral-500 border-b border-black/5">
+        <span>{caption ?? "Stata code"}</span>
+        <CopyButton text={code} />
+      </figcaption>
+      <pre className="text-xs leading-relaxed overflow-x-auto p-3">
         <code>{code}</code>
       </pre>
-      <div className="absolute right-2 top-2">
-        <CopyButton text={code} />
-      </div>
-    </div>
+    </figure>
   );
 }
 
-function PillLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="px-3 py-1.5 rounded-full border border-black/10 hover:border-black/20 hover:bg-white/60 bg-white/50 text-sm transition"
-    >
-      {children}
-    </Link>
-  );
-}
-
-function FeatureCard({
-  title,
-  desc,
-  href,
-  icon,
-}: {
-  title: string;
-  desc: string;
-  href: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group block rounded-2xl border border-black/10 bg-white/60 hover:bg-white/80 hover:shadow-sm transition p-5"
-    >
-      <div className="flex items-center gap-3">
-        <div className="h-9 w-9 rounded-xl border border-black/10 grid place-items-center bg-white/80">
-          {icon}
-        </div>
-        <h3 className="font-medium">{title}</h3>
-      </div>
-      <p className="text-sm text-neutral-600 mt-2">{desc}</p>
-      <div className="mt-3 text-sm text-blue-600 group-hover:underline">Open →</div>
-    </Link>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="rounded-2xl border border-black/10 bg-white/60 p-5">
-      <h2 className="text-lg font-medium mb-3">{title}</h2>
-      {children}
-    </section>
-  );
-}
-
-/* --------------------------- content pieces --------------------------- */
+/* ---------- content blocks ---------- */
 const promptTemplate = `Role: You are a careful Stata tutor for undergraduate econometrics.
 
 Context:
 - Study question and identification strategy: <1–2 lines>
 - Dataset name: <e.g., wagepanel.dta>
-- Variables (name:type:meaning):
-  - wage: numeric, log hourly wage
-  - educ: numeric, years of schooling
-  - exper: numeric, years of experience
-  - id, year: panel identifiers
+- Variables (name : type : meaning):
+  - wage : numeric : log hourly wage
+  - educ : numeric : years of schooling
+  - exper : numeric : years of experience
+  - id, year : panel identifiers
 - Assumptions / SEs: <e.g., cluster at id; robust>
 - Output format: Stata code only, with short comments. Use explicit prefixes (xtset, ivregress, etc.). No placeholder variables.
 
 Task:
 - Write Stata code to accomplish: <task>
-- Include: data load, minimal cleaning, model, SEs, brief postestimation.
-- Constraints: no user interaction, set seed when simulating, avoid deprecated commands.
+- Include: data load, minimal cleaning (few lines), model, SEs, brief postestimation.
+- Constraints: no interactive prompts; set seed when simulating; avoid deprecated commands.
 
 Return: A single code block.`;
 
 const olsRobust = `* OLS with robust SEs
 clear all
+* use your dataset
 use "wagepanel.dta", clear
 
+* basic checks
 describe
 summarize wage educ exper
 
+* OLS with robust (Huber-White) standard errors
 regress wage educ exper, vce(robust)
 
-* If wage is log:
+* effect size in %% if wage is log-transformed
+* (uncomment if wage is lnwage)
 * regress lnwage educ exper, vce(robust)
-* display "Return to schooling (%) = " 100*(exp(_b[educ])-1)`;
+* display "Return to schooling (%%) = " 100*(exp(_b[educ])-1)`;
 
-const iv2sls = `* IV / 2SLS example
+const iv2sls = `* IV / 2SLS: wage on educ instrumented by quarter-of-birth (qob)
 clear all
 use "wage_iv.dta", clear
-
 ivregress 2sls wage (educ = qob) exper age, vce(robust)
 estat firststage
-* If multiple instruments: estat overid`;
+* weak-IV check: first-stage F-statistics
+* over-identification test when multiple instruments:
+* estat overid`;
 
-const did = `* Difference-in-Differences
+const did = `* Difference-in-Differences with two periods
 clear all
 use "did_sample.dta", clear
-* treat=1 if treated group; post=1 after policy
+* treat = 1 if treated group, 0 otherwise
+* post  = 1 after policy, 0 before
+* y     = outcome
 
 reg y i.treat##i.post, vce(robust)
 
-* Event-study (if panel):
+* Event-study if multiple periods and unit FE:
 * xtset id year
-* reghdfe y i.year##i.treat, absorb(id) vce(cluster id)`;
+* reghdfe y i.year##i.treat, absorb(id) vce(cluster id)
+* or:
+* areg y i.year##i.treat, absorb(id) vce(cluster id)`;
 
-const rd = `* Sharp RD
+const rd = `* Sharp RD around cutoff c on running variable r
 clear all
 use "rd_sample.dta", clear
 gen D = r >= 50 if !missing(r)
 
 * rdrobust (if installed)
 * ssc install rdrobust, replace
-rdrobust y r, c(50)`;
+rdrobust y r, c(50)
 
-const fePanel = `* Two-way FE, cluster by unit
+* Manual local linear (illustrative only)
+* keep if inrange(r, 50-5, 50+5)
+* gen cdist = r - 50
+* regress y c.D c.cdist##c.D, vce(robust)`;
+
+const fePanel = `* Two-way Fixed Effects (unit and year), cluster by unit
 clear all
 use "wagepanel.dta", clear
 xtset id year
 
+* reghdfe (high-dimensional FE)
 * ssc install reghdfe, replace
 reghdfe wage educ exper, absorb(id year) vce(cluster id)
 
-* One absorb alternative:
+* Alternative: one absorb (unit FE) + year dummies
 * areg wage educ exper i.year, absorb(id) vce(cluster id)`;
 
 const qcChecklist = [
-  "Do variable names match your dataset exactly?",
-  "Is the sample definition correct? (drops / missing handling)",
-  "Are SEs appropriate? (robust vs cluster, and cluster level)",
-  "IV: check first-stage F and over-ID (when applicable).",
-  "DiD: check pretrends/event-study and composition.",
-  "RD: bandwidth, polynomial order, manipulation (McCrary).",
-  "Save a reproducible do-file (seed, version, pinned packages).",
+  "Do variable names in code match your dataset exactly?",
+  "Confirm the sample and units (no unintended drops).",
+  "Match SE choice to design: robust vs. cluster(level).",
+  "For IV: inspect first-stage F-stat and over-identification (if applicable).",
+  "For DiD: check pre-trends (event study) and group composition.",
+  "For RD: validate bandwidth, polynomial order, and manipulation tests.",
+  "Keep a do-file with seeds, versions, and explicit paths for reproducibility.",
 ];
 
-const codeTabs: { key: string; label: string; code: string }[] = [
-  { key: "ols", label: "OLS (robust)", code: olsRobust },
-  { key: "iv", label: "IV / 2SLS", code: iv2sls },
-  { key: "did", label: "DiD", code: did },
-  { key: "rd", label: "RD", code: rd },
-  { key: "fe", label: "Panel FE", code: fePanel },
+const recipes = [
+  { title: "OLS + robust SEs", code: olsRobust },
+  { title: "IV / 2SLS with first-stage", code: iv2sls },
+  { title: "Difference-in-Differences", code: did },
+  { title: "Regression Discontinuity", code: rd },
+  { title: "Panel FE + clustered SEs", code: fePanel },
 ];
 
-/* ------------------------------- page ------------------------------- */
-export default function Home() {
-  const [active, setActive] = useState(codeTabs[0].key);
-
-  const activeCode = useMemo(
-    () => codeTabs.find((t) => t.key === active)?.code ?? codeTabs[0].code,
-    [active]
+/* ---------- page ---------- */
+export default function AIStataGuide() {
+  const toc = useMemo(
+    () => [
+      { id: "top", label: "Overview" },
+      { id: "rules", label: "Golden Rules" },
+      { id: "template", label: "Prompt Template" },
+      { id: "recipes", label: "Common Tasks" },
+      { id: "patterns", label: "Prompt Patterns" },
+      { id: "qc", label: "QC Checklist" },
+      { id: "extras", label: "Extras" },
+    ],
+    []
   );
 
   return (
-    <main className="max-w-6xl mx-auto px-6 py-12">
-      {/* HERO */}
-      <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-gradient-to-br from-indigo-50 via-rose-50 to-amber-50 p-8">
-        <div className="max-w-3xl">
-          <p className="text-sm uppercase tracking-wide text-neutral-600">Undergraduate Econometrics</p>
-          <h1 className="text-4xl font-semibold leading-tight mt-1">
-            Econometrics, made clear.
+    <main className="max-w-6xl mx-auto px-6 py-10">
+      {/* Hero */}
+      <section
+        id="top"
+        className="relative overflow-hidden rounded-3xl border border-black/5 bg-white"
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-70"
+          style={{
+            background:
+              "radial-gradient(40rem 20rem at -10% -10%, #dbeafe 0%, transparent 60%), radial-gradient(28rem 16rem at 110% -10%, #fee2e2 0%, transparent 60%), radial-gradient(30rem 18rem at 50% 120%, #ede9fe 0%, transparent 60%)",
+          }}
+        />
+        <div className="relative p-8 md:p-12">
+          <Pill>Guide</Pill>
+          <h1 className="mt-3 text-3xl md:text-4xl font-semibold">
+            AI → Stata: Prompting for Econometrics
           </h1>
-          <p className="mt-3 text-neutral-700">
-            Concept-first explanations, reproducible Stata patterns, and hands-on labs.
-            Start with concepts, try an interactive regression lab, or use the AI → Stata
-            prompting recipes below.
+          <p className="mt-3 max-w-3xl text-neutral-700">
+            Learn to turn clear problem statements into reliable Stata code. Focus on scope,
+            schema, and reproducibility—then verify with a quick checklist.
           </p>
-
-          {/* Quick nav pills */}
-          <div className="mt-5 flex flex-wrap gap-2">
-            <PillLink href="/concepts">Concept Cards</PillLink>
-            <PillLink href="/labs">Labs</PillLink>
-            <PillLink href="/labs/ols">OLS Sandbox</PillLink>
-            <PillLink href="/ai-stata">AI → Stata Guide</PillLink>
-            <PillLink href="/syllabus">Syllabus</PillLink>
-            <PillLink href="/resources">Resources</PillLink>
+          <div className="mt-6 flex flex-wrap items-center gap-2">
+            <Pill>Stata</Pill>
+            <Pill>OLS / IV / DiD / RD / FE</Pill>
+            <Pill>Robust / Clustered SEs</Pill>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* FEATURE LINKS */}
-      <div className="grid gap-4 md:grid-cols-3 mt-8">
-        <FeatureCard
-          title="Concept Cards"
-          desc="OLS, IV, RD, DiD, panels—intuition, assumptions, pitfalls, and plain-language summaries."
-          href="/concepts"
-          icon={<span>📘</span>}
-        />
-        <FeatureCard
-          title="Labs"
-          desc="Tiny sandboxes to see regressions behave on toy data. Build intuition before writing code."
-          href="/labs"
-          icon={<span>🧪</span>}
-        />
-        <FeatureCard
-          title="AI → Stata"
-          desc="Prompt recipes and copy-ready Stata code snippets for robust workflows."
-          href="/ai-stata"
-          icon={<span>🤖</span>}
-        />
-      </div>
-
-      {/* AI → STATA MINI-GUIDE */}
-      <div className="mt-8 grid gap-4 md:grid-cols-[1.2fr_1fr]">
-        <Section title="Prompt template (copy & fill)">
-          <p className="text-sm text-neutral-700 mb-3">
-            Use this template with ChatGPT / Claude / Gemini to generate clean, reproducible Stata.
-            Be explicit about schema, estimator, and SEs.
-          </p>
-          <CodeBlock code={promptTemplate} />
-          <p className="text-xs text-neutral-500 mt-2">
-            Tip: ask for <em>one</em> code block only; paste <code>describe</code> output to align variable names.
-          </p>
-        </Section>
-
-        <Section title="QC checklist">
-          <ol className="text-sm list-decimal pl-5 space-y-1">
-            {qcChecklist.map((t, i) => (
-              <li key={i}>{t}</li>
+      {/* Grid: sticky TOC + content */}
+      <div className="mt-10 grid gap-6 md:grid-cols-[220px,1fr]">
+        {/* TOC */}
+        <nav className="md:sticky md:top-24 h-max rounded-2xl border border-black/10 bg-white p-3">
+          <div className="text-[11px] uppercase tracking-wide text-neutral-500 px-2 mb-1">
+            Sections
+          </div>
+          <ul className="space-y-1 text-sm">
+            {toc.map((t) => (
+              <li key={t.id}>
+                <a
+                  href={`#${t.id}`}
+                  className="block rounded-md px-2 py-1 hover:bg-black/5"
+                >
+                  {t.label}
+                </a>
+              </li>
             ))}
-          </ol>
-          <div className="text-xs text-neutral-500 mt-3">
-            Packages: <code>reghdfe</code>, <code>rdrobust</code>, <code>esttab</code>. Header:{" "}
-            <em>clear all; version; set more off; set seed</em>; define paths.
+          </ul>
+
+          <div className="mt-4 border-t border-black/5 pt-3 px-2 text-[12px] text-neutral-600">
+            Prefer a quick start? Jump to{" "}
+            <a href="#recipes" className="text-blue-600 hover:underline">
+              Common Tasks
+            </a>
+            .
           </div>
-        </Section>
-      </div>
+        </nav>
 
-      {/* CODE TABS */}
-      <Section title="Common tasks — copy-ready Stata">
-        <div className="flex flex-wrap gap-2 mb-3">
-          {codeTabs.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setActive(t.key)}
-              className={`px-3 py-1.5 rounded-full border text-sm transition ${
-                active === t.key
-                  ? "bg-white border-black/20 shadow-sm"
-                  : "bg-white/60 border-black/10 hover:border-black/20"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
+        {/* Content */}
+        <div className="space-y-10">
+          <section id="rules" className="rounded-2xl border border-black/10 bg-white p-5">
+            <Section id="rules" title="Golden Rules" badge="Read before prompting" />
+            <ul className="list-disc pl-5 space-y-1 text-sm">
+              <li>
+                Describe the <strong>data schema</strong> (names, types, meaning).
+              </li>
+              <li>
+                State the <strong>design</strong> (OLS / IV / RD / DiD / FE) and{" "}
+                <strong>SE choice</strong>.
+              </li>
+              <li>
+                Ask for <strong>code only</strong> with concise comments; avoid interactive
+                prompts and placeholders.
+              </li>
+              <li>
+                Keep it <strong>reproducible</strong>: set seed, pin packages (e.g.,{" "}
+                <code>reghdfe</code>), save a do-file.
+              </li>
+              <li>
+                <strong>Verify</strong> with the checklist before using results in reports.
+              </li>
+            </ul>
+          </section>
+
+          <section id="template" className="rounded-2xl border border-black/10 bg-white p-5">
+            <Section id="template" title="Prompt Template" badge="Copy & fill" />
+            <p className="text-sm text-neutral-700 mb-3">
+              Copy this template, fill placeholders, then paste into your model of choice.
+            </p>
+            <CodeBlock caption="Prompt template" code={promptTemplate} />
+          </section>
+
+          <section id="recipes" className="rounded-2xl border border-black/10 bg-white p-5">
+            <Section id="recipes" title="Common Tasks — Copy-ready Stata" />
+            <div className="grid md:grid-cols-2 gap-4">
+              {recipes.map((r, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-xl border border-black/10 bg-white/70 p-3 hover:shadow-sm transition"
+                >
+                  <div className="mb-2 flex items-center justify-between">
+                    <h3 className="font-medium">{r.title}</h3>
+                    <CopyButton text={r.code} />
+                  </div>
+                  <CodeBlock code={r.code} />
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section id="patterns" className="rounded-2xl border border-black/10 bg-white p-5">
+            <Section id="patterns" title="Prompt Patterns (for revisions)" />
+            <ul className="list-disc pl-5 space-y-2 text-sm">
+              <li>
+                <strong>Tighten scope:</strong>{" "}
+                <em>Return one Stata code block; robust SEs; no graphs; minimal comments.</em>
+              </li>
+              <li>
+                <strong>Match my schema:</strong> paste a short table of names/types (or{" "}
+                <code>describe</code> output).
+              </li>
+              <li>
+                <strong>Swap estimators:</strong>{" "}
+                <em>Rewrite using <code>ivregress 2sls</code> with instrument Z; include
+                first-stage diagnostics.</em>
+              </li>
+              <li>
+                <strong>Panel SEs:</strong> <em>Cluster at id; two-way FE for id & year.</em>
+              </li>
+              <li>
+                <strong>Minimal cleaning:</strong>{" "}
+                <em>Include only necessary recodes; avoid drops unless justified.</em>
+              </li>
+            </ul>
+          </section>
+
+          <section id="qc" className="rounded-2xl border border-black/10 bg-white p-5">
+            <Section id="qc" title="QC Checklist" />
+            <ol className="list-decimal pl-5 space-y-1 text-sm">
+              {qcChecklist.map((t, i) => (
+                <li key={i}>{t}</li>
+              ))}
+            </ol>
+          </section>
+
+          <section id="extras" className="rounded-2xl border border-black/10 bg-white p-5">
+            <Section id="extras" title="Extras" />
+            <ul className="list-disc pl-5 space-y-1 text-sm">
+              <li>
+                <strong>Packages:</strong> <code>reghdfe</code> (two-way FE),{" "}
+                <code>rdrobust</code> (RD), <code>estout / esttab</code> (tables).
+              </li>
+              <li>
+                <strong>Do-file header:</strong>{" "}
+                <em>clear all; version; set more off; set seed;</em> define project-root paths.
+              </li>
+              <li>
+                <strong>Ethics:</strong> you are responsible for verification; cite your own
+                code, not the model.
+              </li>
+            </ul>
+            <div className="mt-4 text-xs text-neutral-500">
+              Tip: keep a <code>/code</code> folder with dated do-files and a minimal{" "}
+              <code>README.md</code> describing data sources and steps.
+            </div>
+          </section>
+
+          <div className="pt-2 text-xs text-neutral-500">
+            <Link href="/resources" className="text-blue-600 hover:underline">
+              → See Resources
+            </Link>{" "}
+            for textbooks and data portals.
+          </div>
         </div>
-        <CodeBlock code={activeCode} />
-      </Section>
-
-      {/* FOOTER */}
-      <footer className="text-xs text-neutral-500 mt-12">
-        © {new Date().getFullYear()} Undergraduate Econometrics. Built with Next.js & Tailwind.
-      </footer>
+      </div>
     </main>
   );
 }
