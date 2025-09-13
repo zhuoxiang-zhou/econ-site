@@ -9,7 +9,9 @@ function t(A: number[][]) {
   return A[0].map((_, j) => A.map((r) => r[j]));
 }
 function mm(A: number[][], B: number[][]) {
-  const m = A.length, n = B[0].length, p = B.length;
+  const m = A.length,
+    n = B[0].length,
+    p = B.length;
   const C = Array.from({ length: m }, () => Array(n).fill(0));
   for (let i = 0; i < m; i++)
     for (let k = 0; k < p; k++)
@@ -45,11 +47,8 @@ function inv2or3(M: number[][]) {
     [C / det, F / det, I / det],
   ];
 }
-function eye(k: number) {
-  const I = Array.from({ length: k }, (_, i) =>
-    Array.from({ length: k }, (_, j) => (i === j ? 1 : 0))
-  );
-  return I;
+function mean(v: number[]) {
+  return v.reduce((a, b) => a + b, 0) / v.length;
 }
 
 /* ------------------------------- toy dataset ---------------------------------- */
@@ -78,11 +77,12 @@ function olsFit(y: number[], X: number[][], seType: SEType) {
   const Xty = mv(Xt, y);
   const beta = mv(XtXinv, Xty); // (k x 1)
 
-  // Residuals
+  // Residuals, yhat, R2
   const yhat = mv(Xb, beta);
   const e = y.map((yi, i) => yi - yhat[i]);
   const sse = e.reduce((s, v) => s + v * v, 0);
-  const sst = y.reduce((s, yi) => s + Math.pow(yi - (y.reduce((a, b) => a + b, 0) / n), 2), 0);
+  const ybar = mean(y);
+  const sst = y.reduce((s, yi) => s + (yi - ybar) ** 2, 0);
   const r2 = 1 - sse / sst;
 
   // Variance of beta
@@ -91,17 +91,115 @@ function olsFit(y: number[], X: number[][], seType: SEType) {
     const sigma2 = sse / (n - k);
     V = XtXinv.map((row) => row.map((v) => v * sigma2));
   } else {
-    // HC1 robust: (X'X)^-1 X' diag(e^2) X (X'X)^-1 * n/(n-k)
+    // HC1 robust: (X′X)⁻¹ X′ diag(e²) X (X′X)⁻¹ × n/(n−k)
     const scale = n / (n - k);
     const diagE2 = e.map((ei, i) =>
       Array.from({ length: n }, (_, j) => (i === j ? ei * ei : 0))
     );
-    const meat = mm(mm(Xt, diagE2), Xb);
+    const Xt2 = t(Xb);
+    const meat = mm(mm(Xt2, diagE2), Xb);
     const mid = mm(XtXinv, meat);
     V = mm(mid, XtXinv).map((row) => row.map((v) => v * scale));
   }
   const se = V.map((row, i) => Math.sqrt(row[i]));
-  return { beta, se, r2, n, k };
+  return { beta, se, r2, n, k, yhat, e, Xb };
+}
+
+/* --------------------------- residualization helper --------------------------- */
+// Regress v on Z (with intercept) and return residuals of v
+function residualize(v: number[], Z: number[][]) {
+  const Zb = Z.map((r) => [1, ...r]);
+  const beta = mv(inv2or3(mm(t(Zb), Zb)), mv(t(Zb), v));
+  const vhat = mv(Zb, beta);
+  return v.map((vi, i) => vi - vhat[i]);
+}
+
+/* ------------------------------ small SVG charts ------------------------------ */
+type Point = { x: number; y: number };
+function scaleLinear(domain: [number, number], range: [number, number]) {
+  const [d0, d1] = domain;
+  const [r0, r1] = range;
+  const m = (r1 - r0) / (d1 - d0 || 1);
+  return (v: number) => r0 + (v - d0) * m;
+}
+
+function Scatter({
+  width = 640,
+  height = 300,
+  points,
+  line,
+  xLabel,
+  yLabel,
+}: {
+  width?: number;
+  height?: number;
+  points: Point[];
+  line?: { x1: number; y1: number; x2: number; y2: number };
+  xLabel: string;
+  yLabel: string;
+}) {
+  const margin = { top: 14, right: 12, bottom: 34, left: 44 };
+  const innerW = width - margin.left - margin.right;
+  const innerH = height - margin.top - margin.bottom;
+
+  const xs = points.map((p) => p.x);
+  const ys = points.map((p) => p.y);
+  const xMin = Math.min(...xs);
+  const xMax = Math.max(...xs);
+  const yMin = Math.min(...ys);
+  const yMax = Math.max(...ys);
+
+  const sx = scaleLinear([xMin, xMax], [0, innerW]);
+  const sy = scaleLinear([yMin, yMax], [innerH, 0]);
+
+  return (
+    <svg width="100%" viewBox={`0 0 ${width} ${height}`}>
+      <g transform={`translate(${margin.left},${margin.top})`}>
+        {/* axes */}
+        <line x1={0} y1={innerH} x2={innerW} y2={innerH} stroke="#aaa" />
+        <line x1={0} y1={0} x2={0} y2={innerH} stroke="#aaa" />
+
+        {/* scatter */}
+        {points.map((p, i) => (
+          <circle key={i} cx={sx(p.x)} cy={sy(p.y)} r={4} fill="#111" fillOpacity={0.8} />
+        ))}
+
+        {/* fitted line */}
+        {line && (
+          <line
+            x1={sx(line.x1)}
+            y1={sy(line.y1)}
+            x2={sx(line.x2)}
+            y2={sy(line.y2)}
+            stroke="url(#grad1)"
+            strokeWidth={2}
+          />
+        )}
+
+        {/* labels */}
+        <text x={innerW / 2} y={innerH + 26} textAnchor="middle" fontSize="12">
+          {xLabel}
+        </text>
+        <text
+          x={-innerH / 2}
+          y={-34}
+          transform={`rotate(-90)`}
+          textAnchor="middle"
+          fontSize="12"
+        >
+          {yLabel}
+        </text>
+      </g>
+
+      {/* gradient stroke for the line */}
+      <defs>
+        <linearGradient id="grad1" x1="0" x2="1">
+          <stop offset="0%" stopColor="#60a5fa" />
+          <stop offset="100%" stopColor="#f472b6" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
 }
 
 /* ------------------------------ UI component ---------------------------------- */
@@ -135,14 +233,68 @@ export default function OLSLab() {
   }, [useEduc, useExper]);
 
   const stata = useMemo(() => {
-    const rhs = [useEduc && "educ", useExper && "exper"].filter(Boolean).join(" ");
+    const rhs = [useEduc && "educ", useExper && "exper"]
+      .filter(Boolean)
+      .join(" ");
     return `* OLS on toy data (replace with your file)
 regress wage ${rhs}, vce(${seType === "robust" ? "robust" : "ols"})
 `;
   }, [useEduc, useExper, seType]);
 
+  /* --------------------------- plotting data prep --------------------------- */
+  // Residuals vs Fitted (always)
+  const rvfPoints = useMemo<Point[] | null>(() => {
+    if (!result) return null;
+    return result.yhat.map((yh, i) => ({ x: yh, y: result.e[i] }));
+  }, [result]);
+
+  // Scatter or partial regression for educ
+  const educPlot = useMemo<{
+    points: Point[];
+    line: { x1: number; y1: number; x2: number; y2: number };
+    xLabel: string;
+    yLabel: string;
+  } | null>(() => {
+    if (!spec || !result || !useEduc) return null;
+
+    const y = spec.y;
+    const educ = demo.map((r) => r.educ);
+
+    if (!useExper) {
+      // Simple scatter: y vs educ, fitted line using current beta
+      const b0 = result.beta[0],
+        b1 = result.beta[1];
+      const pts = educ.map((x, i) => ({ x, y: y[i] }));
+      const x1 = Math.min(...educ),
+        x2 = Math.max(...educ);
+      return {
+        points: pts,
+        line: { x1, y1: b0 + b1 * x1, x2, y2: b0 + b1 * x2 },
+        xLabel: "educ",
+        yLabel: "wage",
+      };
+    } else {
+      // Partial regression: residualize y and educ on exper
+      const exper = demo.map((r) => r.exper);
+      const y_res = residualize(y, exper.map((v) => [v]));
+      const x_res = residualize(educ, exper.map((v) => [v]));
+      // Fit line y_res ~ x_res
+      const Xp = x_res.map((x) => [1, x]);
+      const bp = mv(inv2or3(mm(t(Xp), Xp)), mv(t(Xp), y_res));
+      const x1 = Math.min(...x_res),
+        x2 = Math.max(...x_res);
+      const pts = x_res.map((x, i) => ({ x, y: y_res[i] }));
+      return {
+        points: pts,
+        line: { x1, y1: bp[0] + bp[1] * x1, x2, y2: bp[0] + bp[1] * x2 },
+        xLabel: "educ (residualized on exper)",
+        yLabel: "wage (residualized on exper)",
+      };
+    }
+  }, [spec, result, useEduc, useExper]);
+
   return (
-    <div className="py-10 max-w-3xl mx-auto">
+    <div className="py-10 max-w-4xl mx-auto">
       {/* breadcrumb */}
       <div className="text-sm mb-3">
         <Link href="/labs" className="opacity-70 hover:opacity-100">
@@ -152,7 +304,9 @@ regress wage ${rhs}, vce(${seType === "robust" ? "robust" : "ols"})
 
       <h1 className="text-2xl font-semibold">OLS Sandbox</h1>
       <p className="text-sm text-neutral-700 mt-2">
-        Toggle covariates and standard errors to see how the results change on a tiny dataset.
+        Toggle covariates and standard errors. Inspect the residuals plot and, when possible, a
+        fitted line for <code>educ</code> (or its partialled-out version when <code>exper</code> is
+        included).
       </p>
 
       {/* controls */}
@@ -200,7 +354,7 @@ regress wage ${rhs}, vce(${seType === "robust" ? "robust" : "ols"})
             </label>
           </div>
           <p className="text-xs text-neutral-500 mt-2">
-            HC1 scales for small samples: Var = (X'X)^−1 X' diag(e²) X (X'X)^−1 × n/(n−k).
+            HC1 scales for small samples: Var = (X′X)⁻¹ X′ diag(e²) X (X′X)⁻¹ × n/(n−k).
           </p>
         </div>
       </div>
@@ -223,30 +377,68 @@ regress wage ${rhs}, vce(${seType === "robust" ? "robust" : "ols"})
                 </tr>
               </thead>
               <tbody>
-                {terms.map((name, j) => {
-                  const b = result.beta[j];
-                  const s = result.se[j];
-                  const lo = b - 1.96 * s;
-                  const hi = b + 1.96 * s;
-                  return (
-                    <tr key={name}>
-                      <td>{name}</td>
-                      <td className="text-right">{b.toFixed(3)}</td>
-                      <td className="text-right">{s.toFixed(3)}</td>
-                      <td className="text-right">
-                        [{lo.toFixed(3)}, {hi.toFixed(3)}]
-                      </td>
-                    </tr>
-                  );
-                })}
+                {["Intercept", useEduc && "educ", useExper && "exper"]
+                  .filter(Boolean)
+                  .map((name, j) => {
+                    const b = result.beta[j];
+                    const s = result.se[j];
+                    const lo = b - 1.96 * s;
+                    const hi = b + 1.96 * s;
+                    return (
+                      <tr key={String(name)}>
+                        <td>{String(name)}</td>
+                        <td className="text-right">{b.toFixed(3)}</td>
+                        <td className="text-right">{s.toFixed(3)}</td>
+                        <td className="text-right">
+                          [{lo.toFixed(3)}, {hi.toFixed(3)}]
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
             <div className="text-xs text-neutral-600 mt-3">
-              n = {result.n}, k (incl. intercept) = {result.k}, R² ={" "}
-              {result.r2.toFixed(3)}
+              n = {result.n}, k (incl. intercept) = {result.k}, R² = {result.r2.toFixed(3)}
             </div>
           </>
         )}
+      </div>
+
+      {/* plots */}
+      <div className="mt-5 grid gap-4 md:grid-cols-2">
+        <div className="border rounded-2xl p-4">
+          <h3 className="font-medium text-sm mb-2">Residuals vs Fitted</h3>
+          {rvfPoints && rvfPoints.length > 0 ? (
+            <Scatter points={rvfPoints} xLabel="Fitted" yLabel="Residual" />
+          ) : (
+            <p className="text-sm">Add at least one covariate to see the plot.</p>
+          )}
+          <p className="text-xs text-neutral-500 mt-2">
+            Look for patterns (funnel shapes ⇒ heteroskedasticity; curves ⇒ misspecification).
+          </p>
+        </div>
+
+        <div className="border rounded-2xl p-4">
+          <h3 className="font-medium text-sm mb-2">
+            {useExper && useEduc ? "Partial regression for educ" : "Scatter with fitted line"}
+          </h3>
+          {educPlot ? (
+            <Scatter
+              points={educPlot.points}
+              line={educPlot.line}
+              xLabel={educPlot.xLabel}
+              yLabel={educPlot.yLabel}
+            />
+          ) : (
+            <p className="text-sm">
+              Enable <code>educ</code> to see this plot.
+            </p>
+          )}
+          <p className="text-xs text-neutral-500 mt-2">
+            With both covariates on, we plot the Frisch–Waugh residuals of <code>wage</code> and{" "}
+            <code>educ</code> after removing <code>exper</code>.
+          </p>
+        </div>
       </div>
 
       {/* code box */}
@@ -264,7 +456,8 @@ regress wage ${rhs}, vce(${seType === "robust" ? "robust" : "ols"})
           <code>{stata}</code>
         </pre>
         <p className="text-xs text-neutral-500 mt-2">
-          Replace <code>wage</code>, <code>educ</code>, <code>exper</code> with your variables and run in Stata.
+          Replace <code>wage</code>, <code>educ</code>, <code>exper</code> with your variables and run
+          in Stata.
         </p>
       </div>
 
