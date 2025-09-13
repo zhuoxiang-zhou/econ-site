@@ -493,7 +493,7 @@ export default function EnhancedResourcesPage() {
             <div className="bg-white rounded-lg p-4 border border-amber-200">
               <h3 className="font-semibold text-amber-700 mb-2">📊 Practice with Real Data</h3>
               <p className="text-sm text-amber-700">
-                Don't just read about methods - implement them using actual datasets. Start with clean data from Our World in Data.
+                Don&apos;t just read about methods - implement them using actual datasets. Start with clean data from Our World in Data.
               </p>
             </div>
             
