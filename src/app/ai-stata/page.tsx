@@ -203,7 +203,7 @@ estimates store ols_robust
 * Effect size interpretation for log wages
 * If wage is log-transformed, uncomment:
 * regress lnwage educ exper, vce(robust)
-* display "Return to schooling (%) = " 100*(exp(_b[educ])-1)`
+* display &quot;Return to schooling (%) = &quot; 100*(exp(_b[educ])-1)`
   },
   {
     title: "Instrumental Variables (2SLS)",
