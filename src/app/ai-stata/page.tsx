@@ -83,7 +83,7 @@ function TableOfContents({ sections }: { sections: { id: string; label: string; 
   }, [sections]);
 
   return (
-    <nav className="sticky top-6 h-fit bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <nav className="h-fit bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-slate-200">
         <h3 className="font-semibold text-slate-800 flex items-center gap-2">
           <span>🧭</span> Navigation
