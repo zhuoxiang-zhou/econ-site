@@ -1,7 +1,10 @@
+// src/app/page.tsx
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 
+/* ------------------------- small UI helpers ------------------------- */
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   return (
@@ -11,7 +14,7 @@ function CopyButton({ text }: { text: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 1200);
       }}
-      className="text-xs px-2 py-1 border rounded-md hover:shadow"
+      className="text-xs px-2 py-1 rounded-md border border-black/10 hover:shadow-sm transition"
       aria-label="Copy to clipboard"
     >
       {copied ? "Copied!" : "Copy"}
@@ -21,8 +24,8 @@ function CopyButton({ text }: { text: string }) {
 
 function CodeBlock({ code }: { code: string }) {
   return (
-    <div className="relative">
-      <pre className="text-sm overflow-x-auto bg-neutral-50 border rounded-xl p-3">
+    <div className="relative rounded-xl border bg-neutral-50">
+      <pre className="text-sm overflow-x-auto rounded-xl p-3">
         <code>{code}</code>
       </pre>
       <div className="absolute right-2 top-2">
@@ -32,8 +35,56 @@ function CodeBlock({ code }: { code: string }) {
   );
 }
 
-export default function AIStataGuide() {
-  const promptTemplate = `Role: You are a careful Stata tutor for undergraduate econometrics.
+function PillLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="px-3 py-1.5 rounded-full border border-black/10 hover:border-black/20 hover:bg-white/60 bg-white/50 text-sm transition"
+    >
+      {children}
+    </Link>
+  );
+}
+
+function FeatureCard({
+  title,
+  desc,
+  href,
+  icon,
+}: {
+  title: string;
+  desc: string;
+  href: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group block rounded-2xl border border-black/10 bg-white/60 hover:bg-white/80 hover:shadow-sm transition p-5"
+    >
+      <div className="flex items-center gap-3">
+        <div className="h-9 w-9 rounded-xl border border-black/10 grid place-items-center bg-white/80">
+          {icon}
+        </div>
+        <h3 className="font-medium">{title}</h3>
+      </div>
+      <p className="text-sm text-neutral-600 mt-2">{desc}</p>
+      <div className="mt-3 text-sm text-blue-600 group-hover:underline">Open →</div>
+    </Link>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-2xl border border-black/10 bg-white/60 p-5">
+      <h2 className="text-lg font-medium mb-3">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+/* --------------------------- content pieces --------------------------- */
+const promptTemplate = `Role: You are a careful Stata tutor for undergraduate econometrics.
 
 Context:
 - Study question and identification strategy: <1–2 lines>
@@ -48,186 +99,189 @@ Context:
 
 Task:
 - Write Stata code to accomplish: <task>
-- Include: data load, cleaning as needed (few lines), model, SEs, brief postestimation.
-- Constraints: no user interaction, use set seed when simulating, no deprecated commands.
+- Include: data load, minimal cleaning, model, SEs, brief postestimation.
+- Constraints: no user interaction, set seed when simulating, avoid deprecated commands.
 
 Return: A single code block.`;
 
-  const olsRobust = `* OLS with robust SEs
+const olsRobust = `* OLS with robust SEs
 clear all
-* use your dataset
 use "wagepanel.dta", clear
 
-* basic checks
 describe
 summarize wage educ exper
 
-* OLS with robust (Huber-White) standard errors
 regress wage educ exper, vce(robust)
 
-* effect size in % if wage is log-transformed
-* (uncomment if wage is lnwage)
+* If wage is log:
 * regress lnwage educ exper, vce(robust)
 * display "Return to schooling (%) = " 100*(exp(_b[educ])-1)`;
 
-  const iv2sls = `* IV / 2SLS: wage on educ instrumented by quarter-of-birth (qob)
+const iv2sls = `* IV / 2SLS example
 clear all
 use "wage_iv.dta", clear
-* first stage
+
 ivregress 2sls wage (educ = qob) exper age, vce(robust)
 estat firststage
-* weak-IV check: look at first-stage F-statistics
-* over-id test when >1 instrument:
-* estat overid`;
+* If multiple instruments: estat overid`;
 
-  const did = `* Difference-in-Differences with two periods
+const did = `* Difference-in-Differences
 clear all
 use "did_sample.dta", clear
-* Variables:
-* treat = 1 if treated group, 0 otherwise
-* post  = 1 after policy, 0 before
-* y     = outcome
+* treat=1 if treated group; post=1 after policy
 
-* DiD specification with robust SEs (cluster by group if panel groups exist)
 reg y i.treat##i.post, vce(robust)
 
-* Event-study style (if multiple periods and unit FE available)
+* Event-study (if panel):
 * xtset id year
-* reghdfe y i.year##i.treat, absorb(id) vce(cluster id)
-* or: areg y i.year##i.treat, absorb(id) vce(cluster id)`;
+* reghdfe y i.year##i.treat, absorb(id) vce(cluster id)`;
 
-  const rd = `* Sharp RD around cutoff c on running variable r
+const rd = `* Sharp RD
 clear all
 use "rd_sample.dta", clear
-* running variable r, treatment D = r >= c
 gen D = r >= 50 if !missing(r)
 
-* local polynomial RD using rdrobust (if installed)
+* rdrobust (if installed)
 * ssc install rdrobust, replace
-rdrobust y r, c(50)
+rdrobust y r, c(50)`;
 
-* Manual local linear with bandwidth h (illustrative)
-* keep if inrange(r, 50-5, 50+5)
-* regress y c.D c.cdist##c.D, vce(robust)
-* where cdist = r - 50`;
-
-  const fePanel = `* Two-way Fixed Effects (unit and year), cluster by unit
+const fePanel = `* Two-way FE, cluster by unit
 clear all
 use "wagepanel.dta", clear
 xtset id year
 
-* reghdfe is convenient for high-dimensional FE
 * ssc install reghdfe, replace
 reghdfe wage educ exper, absorb(id year) vce(cluster id)
 
-* Alternative: areg for one absorb (unit FE) + year dummies
+* One absorb alternative:
 * areg wage educ exper i.year, absorb(id) vce(cluster id)`;
 
-  const qcChecklist = [
-    "Read the code comments: do variable names match your dataset exactly?",
-    "Confirm sample and units: any accidental listwise deletion or missing filters?",
-    "Check SE choice: robust vs. cluster(level). For panels, cluster at the unit (or group) level.",
-    "For IV: look at first-stage F-stat and over-id (when applicable).",
-    "For DiD: check pretrends (event-study) and group composition.",
-    "For RD: verify bandwidth, polynomial order, and manipulation checks (McCrary).",
-    "Save a do-file with seeds, versions, and explicit file paths for full reproducibility.",
-  ];
+const qcChecklist = [
+  "Do variable names match your dataset exactly?",
+  "Is the sample definition correct? (drops / missing handling)",
+  "Are SEs appropriate? (robust vs cluster, and cluster level)",
+  "IV: check first-stage F and over-ID (when applicable).",
+  "DiD: check pretrends/event-study and composition.",
+  "RD: bandwidth, polynomial order, manipulation (McCrary).",
+  "Save a reproducible do-file (seed, version, pinned packages).",
+];
 
-  const promptExamples = [
-    {
-      title: "Prompt recipe (fill before sending to a model)",
-      content: promptTemplate,
-    },
-    {
-      title: "OLS + robust SEs",
-      code: olsRobust,
-    },
-    {
-      title: "IV / 2SLS with first-stage check",
-      code: iv2sls,
-    },
-    {
-      title: "Difference-in-Differences",
-      code: did,
-    },
-    {
-      title: "Regression Discontinuity",
-      code: rd,
-    },
-    {
-      title: "Panel FE + clustered SEs",
-      code: fePanel,
-    },
-  ];
+const codeTabs: { key: string; label: string; code: string }[] = [
+  { key: "ols", label: "OLS (robust)", code: olsRobust },
+  { key: "iv", label: "IV / 2SLS", code: iv2sls },
+  { key: "did", label: "DiD", code: did },
+  { key: "rd", label: "RD", code: rd },
+  { key: "fe", label: "Panel FE", code: fePanel },
+];
+
+/* ------------------------------- page ------------------------------- */
+export default function Home() {
+  const [active, setActive] = useState(codeTabs[0].key);
+
+  const activeCode = useMemo(
+    () => codeTabs.find((t) => t.key === active)?.code ?? codeTabs[0].code,
+    [active]
+  );
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-12">
-      <h1 className="text-3xl font-semibold mb-2">AI → Stata: Prompting Guide for Econometrics</h1>
-      <p className="text-neutral-700 mb-6">
-        This page shows how to leverage a generative model <em>productively</em> to write Stata code.
-        Focus on good prompts, verify outputs, and keep do-files reproducible. No API keys are required to read/learn here.
-      </p>
+    <main className="max-w-6xl mx-auto px-6 py-12">
+      {/* HERO */}
+      <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-gradient-to-br from-indigo-50 via-rose-50 to-amber-50 p-8">
+        <div className="max-w-3xl">
+          <p className="text-sm uppercase tracking-wide text-neutral-600">Undergraduate Econometrics</p>
+          <h1 className="text-4xl font-semibold leading-tight mt-1">
+            Econometrics, made clear.
+          </h1>
+          <p className="mt-3 text-neutral-700">
+            Concept-first explanations, reproducible Stata patterns, and hands-on labs.
+            Start with concepts, try an interactive regression lab, or use the AI → Stata
+            prompting recipes below.
+          </p>
 
-      <section className="border rounded-2xl p-5 mb-8">
-        <h2 className="text-xl font-medium mb-2">Golden rules</h2>
-        <ul className="list-disc pl-5 space-y-1 text-sm">
-          <li><strong>Describe the data schema</strong> (names, types, meaning).</li>
-          <li><strong>State the identification strategy</strong> (OLS/IV/RD/DiD/FE) and <strong>SE choice</strong>.</li>
-          <li><strong>Ask for Stata code only</strong> with short comments; no placeholders or interactive commands.</li>
-          <li><strong>Reproducibility</strong>: set seeds, pin commands (e.g., <code>reghdfe</code>), and save a do-file.</li>
-          <li><strong>Verify</strong> with the QC checklist below before using results in a report.</li>
-        </ul>
-      </section>
+          {/* Quick nav pills */}
+          <div className="mt-5 flex flex-wrap gap-2">
+            <PillLink href="/concepts">Concept Cards</PillLink>
+            <PillLink href="/labs">Labs</PillLink>
+            <PillLink href="/labs/ols">OLS Sandbox</PillLink>
+            <PillLink href="/ai-stata">AI → Stata Guide</PillLink>
+            <PillLink href="/syllabus">Syllabus</PillLink>
+            <PillLink href="/resources">Resources</PillLink>
+          </div>
+        </div>
+      </div>
 
-      <section className="border rounded-2xl p-5 mb-8">
-        <h2 className="text-xl font-medium mb-3">Prompt template</h2>
-        <p className="text-sm mb-3">
-          Copy this template, fill the placeholders, then paste it into your preferred model (ChatGPT, Claude, Gemini, etc.).
-        </p>
-        <CodeBlock code={promptTemplate} />
-      </section>
+      {/* FEATURE LINKS */}
+      <div className="grid gap-4 md:grid-cols-3 mt-8">
+        <FeatureCard
+          title="Concept Cards"
+          desc="OLS, IV, RD, DiD, panels—intuition, assumptions, pitfalls, and plain-language summaries."
+          href="/concepts"
+          icon={<span>📘</span>}
+        />
+        <FeatureCard
+          title="Labs"
+          desc="Tiny sandboxes to see regressions behave on toy data. Build intuition before writing code."
+          href="/labs"
+          icon={<span>🧪</span>}
+        />
+        <FeatureCard
+          title="AI → Stata"
+          desc="Prompt recipes and copy-ready Stata code snippets for robust workflows."
+          href="/ai-stata"
+          icon={<span>🤖</span>}
+        />
+      </div>
 
-      <section className="border rounded-2xl p-5 mb-8">
-        <h2 className="text-xl font-medium mb-3">Common tasks — copy-ready Stata</h2>
-        <div className="grid md:grid-cols-2 gap-4">
-          {promptExamples.slice(1).map((ex, i) => (
-            <div key={i} className="border rounded-xl p-3">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-medium">{ex.title}</h3>
-                <CopyButton text={ex.code!} />
-              </div>
-              <CodeBlock code={ex.code!} />
-            </div>
+      {/* AI → STATA MINI-GUIDE */}
+      <div className="mt-8 grid gap-4 md:grid-cols-[1.2fr_1fr]">
+        <Section title="Prompt template (copy & fill)">
+          <p className="text-sm text-neutral-700 mb-3">
+            Use this template with ChatGPT / Claude / Gemini to generate clean, reproducible Stata.
+            Be explicit about schema, estimator, and SEs.
+          </p>
+          <CodeBlock code={promptTemplate} />
+          <p className="text-xs text-neutral-500 mt-2">
+            Tip: ask for <em>one</em> code block only; paste <code>describe</code> output to align variable names.
+          </p>
+        </Section>
+
+        <Section title="QC checklist">
+          <ol className="text-sm list-decimal pl-5 space-y-1">
+            {qcChecklist.map((t, i) => (
+              <li key={i}>{t}</li>
+            ))}
+          </ol>
+          <div className="text-xs text-neutral-500 mt-3">
+            Packages: <code>reghdfe</code>, <code>rdrobust</code>, <code>esttab</code>. Header:{" "}
+            <em>clear all; version; set more off; set seed</em>; define paths.
+          </div>
+        </Section>
+      </div>
+
+      {/* CODE TABS */}
+      <Section title="Common tasks — copy-ready Stata">
+        <div className="flex flex-wrap gap-2 mb-3">
+          {codeTabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setActive(t.key)}
+              className={`px-3 py-1.5 rounded-full border text-sm transition ${
+                active === t.key
+                  ? "bg-white border-black/20 shadow-sm"
+                  : "bg-white/60 border-black/10 hover:border-black/20"
+              }`}
+            >
+              {t.label}
+            </button>
           ))}
         </div>
-      </section>
+        <CodeBlock code={activeCode} />
+      </Section>
 
-      <section className="border rounded-2xl p-5 mb-8">
-        <h2 className="text-xl font-medium mb-2">How to ask for code revisions (prompt patterns)</h2>
-        <ul className="list-disc pl-5 space-y-2 text-sm">
-          <li><strong>“Tighten scope”</strong>: <em>“Return a single Stata code block; robust SEs; no graphs; few comments.”</em></li>
-          <li><strong>“Match my schema”</strong>: paste <em>describe</em> output or a short table of names/types.</li>
-          <li><strong>“Swap estimators”</strong>: <em>“Rewrite using <code>ivregress 2sls</code> with instrument Z; report first-stage.”</em></li>
-          <li><strong>“Panel SEs”</strong>: <em>“Cluster at id; two-way FE id & year.”</em></li>
-          <li><strong>“Show minimal cleaning”</strong>: <em>“Include only necessary recodes, no drops unless justified.”</em></li>
-        </ul>
-      </section>
-
-      <section className="border rounded-2xl p-5 mb-8">
-        <h2 className="text-xl font-medium mb-2">QC checklist before you trust the output</h2>
-        <ol className="list-decimal pl-5 space-y-1 text-sm">
-          {qcChecklist.map((t, i) => (<li key={i}>{t}</li>))}
-        </ol>
-      </section>
-
-      <section className="border rounded-2xl p-5">
-        <h2 className="text-xl font-medium mb-2">Extras</h2>
-        <ul className="list-disc pl-5 space-y-1 text-sm">
-          <li><strong>Packages:</strong> <code>reghdfe</code> (two-way FE), <code>rdrobust</code> (RD), <code>estout/esttab</code> (tables).</li>
-          <li><strong>Reproducible do-file header:</strong> <em>clear all; version; set more off; set seed;</em> define paths.</li>
-          <li><strong>Ethics:</strong> you are responsible for verification; cite your own code, not the model.</li>
-        </ul>
-      </section>
+      {/* FOOTER */}
+      <footer className="text-xs text-neutral-500 mt-12">
+        © {new Date().getFullYear()} Undergraduate Econometrics. Built with Next.js & Tailwind.
+      </footer>
     </main>
   );
 }
