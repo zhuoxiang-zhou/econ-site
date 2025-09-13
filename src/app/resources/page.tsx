@@ -1,8 +1,6 @@
 // src/app/resources/page.tsx
 "use client";
 
-import Link from "next/link";
-
 export default function ResourcesPage() {
   return (
     <main className="max-w-4xl mx-auto px-6 py-12">

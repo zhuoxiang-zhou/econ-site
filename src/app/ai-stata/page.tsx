@@ -573,7 +573,7 @@ export default function ImprovedAIStataGuide() {
                     <ul className="space-y-2">
                       {category.patterns.map((pattern, j) => (
                         <li key={j} className="text-sm text-slate-700 italic bg-white p-2 rounded border-l-2 border-blue-200">
-                          "{pattern}"
+                          &ldquo;{pattern}&rdquo;
                         </li>
                       ))}
                     </ul>
