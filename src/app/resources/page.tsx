@@ -16,13 +16,13 @@ export default function ResourcesPage() {
         <h2 className="text-lg font-medium mb-3">📚 Core Textbooks</h2>
         <ul className="list-disc list-inside space-y-2 text-sm">
           <li>
-            Jeffrey M. Wooldridge – <i>Introductory Econometrics: A Modern Approach</i> (6th ed.){" "}
+            Jeffrey M. Wooldridge – <i>Introductory Econometrics: A Modern Approach</i> (7th ed.){" "}
             <a
-              href="https://ocw.mit.edu/courses/economics/14-382-econometrics-spring-2017/resources/MIT14_382S17_Textbook/"
+              href="https://www.academia.edu/49732662/Introductory_Econometrics_7E_2020_"
               target="_blank"
               className="text-blue-600 hover:underline"
             >
-              [PDF / MIT OCW]
+              [PDF]
             </a>
           </li>
           <li>
@@ -95,7 +95,7 @@ export default function ResourcesPage() {
         </ul>
       </section>
 
-      {/* Course syllabi */}
+      {/* Course syllabi
       <section className="mb-10">
         <h2 className="text-lg font-medium mb-3">📄 Course Materials</h2>
         <ul className="list-disc list-inside space-y-2 text-sm">
@@ -115,7 +115,7 @@ export default function ResourcesPage() {
             </a>
           </li>
         </ul>
-      </section>
+      </section> */}
 
       <footer className="text-xs text-neutral-500 mt-12">
         This page collects open educational resources. Please use institutional access
