@@ -429,7 +429,7 @@ tabstat outcome, by(treated period) statistics(mean)`;
             transition={{ duration: 0.6, delay: 0.2 }}
             className="lg:col-span-1"
           >
-            <div className="bg-white rounded-xl border border-slate-200 shadow-lg p-6 sticky top-8">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-lg p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-slate-800">Controls</h2>
                 <button

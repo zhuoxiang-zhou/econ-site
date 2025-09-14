@@ -305,7 +305,7 @@ ${useZ2 ? "estat overid" : "* estat overid  // (needs >1 instrument)"}`
         <div className="grid lg:grid-cols-4 gap-8">
           {/* Controls */}
           <motion.div initial={{ x: -30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }} className="lg:col-span-1">
-            <div className="bg-white rounded-xl border border-slate-200 shadow-lg p-6 sticky top-8">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-lg p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-slate-800">Controls</h2>
                 <button onClick={reset} className="p-2 text-slate-500 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors" title="Reset to defaults">

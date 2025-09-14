@@ -149,7 +149,7 @@ const LABS: Lab[] = [
     slug: "rd",
     title: "Regression Discontinuity",
     blurb: "Adjust cutoffs and bandwidths dynamically. See how local treatment effects change around thresholds.",
-    difficulty: "Advanced",
+    difficulty: "Intermediate",
     duration: "25-30 min",
     icon: "📏", 
     methods: ["Sharp RD", "Bandwidth", "Local effects"]
