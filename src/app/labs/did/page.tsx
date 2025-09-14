@@ -110,8 +110,8 @@ function generateData(
   const controlBaseline = 50;
   
   // Generate data for each group-time combination
-  for (let treated of [false, true]) {
-    for (let period of ["pre", "post"] as const) {
+  for (const treated of [false, true]) {
+    for (const period of ["pre", "post"] as const) {
       for (let i = 0; i < 25; i++) {
         let outcome = controlBaseline;
         
