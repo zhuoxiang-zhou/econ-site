@@ -31,6 +31,23 @@ import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Play, Copy, RefreshCw, AlertTriangle, TrendingUp } from "lucide-react";
 
+interface RDResults {
+  rdEstimate: number;
+  simpleDiff: number;
+  treatmentGroup: {
+    n: number;
+    mean: number;
+    regression: { slope: number; intercept: number };
+  };
+  controlGroup: {
+    n: number;
+    mean: number;
+    regression: { slope: number; intercept: number };
+  };
+  bandwidth: number;
+  totalN: number;
+}
+
 // Simple statistics functions
 function mean(arr: number[]) {
   return arr.reduce((a, b) => a + b, 0) / arr.length;
@@ -199,7 +216,7 @@ function RDPlot({
   data: StudentData[];
   cutoff: number;
   bandwidth: number;
-  rdResults: any;
+  rdResults: RDResults;
   width?: number;
   height?: number;
 }) {
