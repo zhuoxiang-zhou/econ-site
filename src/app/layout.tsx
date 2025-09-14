@@ -50,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="max-w-6xl mx-auto px-6">{children}</main>
 
         <footer className="max-w-6xl mx-auto px-6 py-10 text-xs text-neutral-500 border-t border-black/5 mt-16">
-          © {new Date().getFullYear()} Undergraduate Econometrics. Built with Next.js & Tailwind.
+          © {new Date().getFullYear()} Peking University, National School of Development, Econometrics Course Team. Designed by Zhuoxiang Zhou with AI assistance.
         </footer>
       </body>
     </html>
