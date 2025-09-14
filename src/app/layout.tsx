@@ -104,7 +104,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     Econometrics Hub
                   </div>
                   <div className="text-sm text-slate-600 font-medium -mt-1">
-                    Interactive Learning Platform
+                    Interactive Learning Platform by PKU NSD
                   </div>
                 </div>
               </Link>
@@ -202,7 +202,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </p>
                 <div className="flex items-center gap-2 text-sm text-slate-500">
                   <TrendingUp size={16} />
-                  <span>Trusted by students worldwide</span>
+                  <span>Designed for AI-assisted learning</span>
                 </div>
               </div>
 
@@ -267,11 +267,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <div className="flex items-center gap-8 text-sm">
                   <div className="text-slate-500">
                     Built with Next.js • TypeScript • Tailwind CSS
-                  </div>
-                  <div className="flex gap-6 text-slate-500">
-                    <Link href="#" className="hover:text-slate-700 transition-colors">Privacy Policy</Link>
-                    <Link href="#" className="hover:text-slate-700 transition-colors">Terms of Use</Link>
-                    <Link href="#" className="hover:text-slate-700 transition-colors">Contact</Link>
                   </div>
                 </div>
               </div>
