@@ -310,7 +310,7 @@ export default function FancyHome() {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                title: "Interactive Concept Cards",
+                title: "Concept Cards",
                 desc: "Explore OLS, IV, DiD, RD, and panel methods with visual explanations, real-world examples, and common pitfalls to avoid.",
                 href: "/concepts",
                 Icon: BookOpen,
