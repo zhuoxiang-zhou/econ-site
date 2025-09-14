@@ -663,8 +663,9 @@ export default function OLSLab() {
     // simple line using estimated coefficients; when including w, we plot ŷ as a function of x at w = mean(w)
     const a = fit.beta[0];
     const wbar = mean(w);
-    const b = includeW ? (a + (estW ?? 0) * wbar, estX) : estX; // slope w.r.t. x is estX
+    const b = estX; // slope w.r.t. x is estX
     const alphaForLine = includeW ? a + (estW ?? 0) * wbar : a;
+
     return { a: alphaForLine, b, color: "#2563eb", label: "OLS fit" };
   }, [fit.beta, estX, estW, includeW, w]);
 
