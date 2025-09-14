@@ -63,8 +63,7 @@ import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import clsx from "clsx";
-import { useState } from "react";
-import { Menu, X, BookOpen, FlaskConical, Bot, FileText, GraduationCap } from "lucide-react";
+import { BookOpen, FlaskConical, Bot, FileText, GraduationCap, TrendingUp } from "lucide-react";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -75,56 +74,7 @@ export const metadata: Metadata = {
   keywords: "econometrics, causal inference, OLS, IV, DiD, RD, Stata, interactive learning",
   authors: [{ name: "Zhuoxiang Zhou" }],
   viewport: "width=device-width, initial-scale=1",
-  openGraph: {
-    title: "Econometrics Hub",
-    description: "Interactive econometrics learning platform",
-    type: "website",
-  }
 };
-
-function MobileMenu() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const navLinks = [
-    { href: "/concepts", label: "Concepts", icon: BookOpen, description: "Core econometric methods" },
-    { href: "/labs", label: "Interactive Labs", icon: FlaskConical, description: "Hands-on experiments" },
-    { href: "/ai-stata", label: "AI + Stata", icon: Bot, description: "Code generation guide" },
-    { href: "/resources", label: "Resources", icon: FileText, description: "Books, data & tools" },
-  ];
-
-  return (
-    <>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="sm:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
-        aria-label="Toggle menu"
-      >
-        {isOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
-
-      {isOpen && (
-        <div className="absolute top-full left-0 right-0 bg-white border-b border-slate-200 shadow-lg sm:hidden">
-          <nav className="px-6 py-4 space-y-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors group"
-              >
-                <link.icon size={20} className="text-slate-600 group-hover:text-blue-600" />
-                <div>
-                  <div className="font-medium text-slate-800">{link.label}</div>
-                  <div className="text-xs text-slate-500">{link.description}</div>
-                </div>
-              </Link>
-            ))}
-          </nav>
-        </div>
-      )}
-    </>
-  );
-}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -136,136 +86,194 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           "antialiased bg-gradient-to-br from-slate-50 via-white to-blue-50 text-slate-900 min-h-screen"
         )}
       >
-        {/* Enhanced Header */}
-        <header className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-slate-200/50 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="flex items-center justify-between h-16">
+        {/* Premium Header */}
+        <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/90 border-b border-slate-200/60 shadow-lg">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex items-center justify-between h-20">
               
-              {/* Logo */}
-              <Link href="/" className="flex items-center gap-3 group">
-                <div className="p-2 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl shadow-lg group-hover:shadow-xl transition-shadow">
-                  <GraduationCap size={20} className="text-white" />
+              {/* Enhanced Logo */}
+              <Link href="/" className="flex items-center gap-4 group">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="relative p-3 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-xl group-hover:shadow-2xl transition-all transform group-hover:scale-105">
+                    <GraduationCap size={28} className="text-white" />
+                  </div>
                 </div>
-                <div className="hidden sm:block">
-                  <div className="font-bold text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <div>
+                  <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
                     Econometrics Hub
                   </div>
-                  <div className="text-xs text-slate-500 -mt-1">Interactive Learning Platform</div>
+                  <div className="text-sm text-slate-600 font-medium -mt-1">
+                    Interactive Learning Platform
+                  </div>
                 </div>
-                <div className="sm:hidden font-bold text-slate-800">EconHub</div>
               </Link>
 
-              {/* Desktop Navigation */}
-              <nav className="hidden sm:flex items-center gap-1">
+              {/* Premium Navigation */}
+              <nav className="flex items-center gap-2">
                 <Link
                   href="/concepts"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-700 hover:text-slate-900"
+                  className="group flex items-center gap-3 px-6 py-3 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 transition-all duration-300 text-slate-700 hover:text-blue-800"
                 >
-                  <BookOpen size={16} />
-                  <span className="font-medium">Concepts</span>
+                  <BookOpen size={20} className="group-hover:scale-110 transition-transform" />
+                  <div>
+                    <div className="font-semibold">Concepts</div>
+                    <div className="text-xs text-slate-500 group-hover:text-blue-600">Core methods</div>
+                  </div>
                 </Link>
+                
                 <Link
                   href="/labs"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-700 hover:text-slate-900"
+                  className="group flex items-center gap-3 px-6 py-3 rounded-xl hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100 transition-all duration-300 text-slate-700 hover:text-purple-800"
                 >
-                  <FlaskConical size={16} />
-                  <span className="font-medium">Labs</span>
+                  <FlaskConical size={20} className="group-hover:scale-110 transition-transform" />
+                  <div>
+                    <div className="font-semibold">Interactive Labs</div>
+                    <div className="text-xs text-slate-500 group-hover:text-purple-600">Hands-on practice</div>
+                  </div>
                 </Link>
+                
                 <Link
                   href="/ai-stata"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-700 hover:text-slate-900"
+                  className="group flex items-center gap-3 px-6 py-3 rounded-xl hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100 transition-all duration-300 text-slate-700 hover:text-emerald-800"
                 >
-                  <Bot size={16} />
-                  <span className="font-medium">AI + Stata</span>
+                  <Bot size={20} className="group-hover:scale-110 transition-transform" />
+                  <div>
+                    <div className="font-semibold">AI + Stata</div>
+                    <div className="text-xs text-slate-500 group-hover:text-emerald-600">Code generation</div>
+                  </div>
                 </Link>
+                
                 <Link
                   href="/resources"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-700 hover:text-slate-900"
+                  className="group flex items-center gap-3 px-6 py-3 rounded-xl hover:bg-gradient-to-r hover:from-amber-50 hover:to-amber-100 transition-all duration-300 text-slate-700 hover:text-amber-800"
                 >
-                  <FileText size={16} />
-                  <span className="font-medium">Resources</span>
+                  <FileText size={20} className="group-hover:scale-110 transition-transform" />
+                  <div>
+                    <div className="font-semibold">Resources</div>
+                    <div className="text-xs text-slate-500 group-hover:text-amber-600">Books & data</div>
+                  </div>
                 </Link>
               </nav>
-
-              {/* Mobile Menu Button */}
-              <MobileMenu />
             </div>
           </div>
         </header>
 
-        {/* Main Content with better spacing */}
+        {/* Enhanced Main Content */}
         <main className="relative">
-          {/* Background decoration */}
-          <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-100/30 to-transparent rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-purple-100/30 to-transparent rounded-full blur-3xl" />
+          {/* Sophisticated background elements */}
+          <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+            {/* Primary gradient orb */}
+            <div className="absolute top-[-10%] right-[-5%] w-[40rem] h-[40rem] bg-gradient-to-bl from-blue-200/40 via-purple-200/30 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+            
+            {/* Secondary gradient orb */}
+            <div className="absolute bottom-[-10%] left-[-5%] w-[35rem] h-[35rem] bg-gradient-to-tr from-emerald-200/30 via-blue-200/20 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDuration: '12s', animationDelay: '2s' }} />
+            
+            {/* Subtle geometric pattern */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:100px_100px] opacity-40" />
           </div>
           
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="relative max-w-7xl mx-auto px-6">
             {children}
           </div>
         </main>
 
-        {/* Enhanced Footer */}
-        <footer className="mt-20 border-t border-slate-200/50 bg-white/50 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-            <div className="grid md:grid-cols-4 gap-8">
+        {/* Premium Footer */}
+        <footer className="mt-24 border-t border-slate-200/60 bg-white/70 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-6 py-16">
+            <div className="grid lg:grid-cols-5 gap-12">
               
-              {/* Brand Column */}
-              <div className="md:col-span-2">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl">
-                    <GraduationCap size={20} className="text-white" />
+              {/* Brand Section */}
+              <div className="lg:col-span-2">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg">
+                    <GraduationCap size={24} className="text-white" />
                   </div>
                   <div>
-                    <div className="font-bold text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                       Econometrics Hub
                     </div>
+                    <div className="text-slate-600">Interactive Learning Platform</div>
                   </div>
                 </div>
-                <p className="text-slate-600 mb-4 max-w-md">
-                  Interactive platform for learning causal inference and econometric methods. 
-                  Built for undergraduate and graduate students worldwide.
+                <p className="text-slate-600 mb-6 leading-relaxed max-w-md">
+                  Master causal inference and econometric methods through interactive experiments, 
+                  AI-powered code generation, and concept-first explanations designed for modern learners.
                 </p>
-                <div className="text-sm text-slate-500">
-                  <div>© {new Date().getFullYear()} Peking University</div>
-                  <div>National School of Development</div>
-                  <div className="mt-1">Designed by Zhuoxiang Zhou</div>
+                <div className="flex items-center gap-2 text-sm text-slate-500">
+                  <TrendingUp size={16} />
+                  <span>Trusted by students worldwide</span>
                 </div>
               </div>
 
-              {/* Quick Links */}
+              {/* Learning Paths */}
               <div>
-                <h3 className="font-semibold text-slate-800 mb-3">Learn</h3>
-                <ul className="space-y-2 text-sm">
-                  <li><Link href="/concepts" className="text-slate-600 hover:text-blue-600 transition-colors">Core Concepts</Link></li>
-                  <li><Link href="/labs/ols" className="text-slate-600 hover:text-blue-600 transition-colors">OLS Lab</Link></li>
-                  <li><Link href="/labs/did" className="text-slate-600 hover:text-blue-600 transition-colors">DiD Lab</Link></li>
-                  <li><Link href="/ai-stata" className="text-slate-600 hover:text-blue-600 transition-colors">Stata Guide</Link></li>
+                <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                  <BookOpen size={18} className="text-blue-600" />
+                  Core Methods
+                </h3>
+                <ul className="space-y-3 text-sm">
+                  <li><Link href="/concepts/ols" className="text-slate-600 hover:text-blue-600 transition-colors hover:underline">OLS Regression</Link></li>
+                  <li><Link href="/concepts/instrumental-variables" className="text-slate-600 hover:text-blue-600 transition-colors hover:underline">Instrumental Variables</Link></li>
+                  <li><Link href="/concepts/difference-in-differences" className="text-slate-600 hover:text-blue-600 transition-colors hover:underline">Difference-in-Differences</Link></li>
+                  <li><Link href="/concepts/regression-discontinuity" className="text-slate-600 hover:text-blue-600 transition-colors hover:underline">Regression Discontinuity</Link></li>
+                  <li><Link href="/concepts/fixed-effects" className="text-slate-600 hover:text-blue-600 transition-colors hover:underline">Fixed Effects</Link></li>
+                </ul>
+              </div>
+
+              {/* Interactive Tools */}
+              <div>
+                <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                  <FlaskConical size={18} className="text-purple-600" />
+                  Interactive Labs
+                </h3>
+                <ul className="space-y-3 text-sm">
+                  <li><Link href="/labs/ols" className="text-slate-600 hover:text-purple-600 transition-colors hover:underline">OLS Sandbox</Link></li>
+                  <li><Link href="/labs/iv" className="text-slate-600 hover:text-purple-600 transition-colors hover:underline">IV Experiments</Link></li>
+                  <li><Link href="/labs/did" className="text-slate-600 hover:text-purple-600 transition-colors hover:underline">DiD with Pre-trends</Link></li>
+                  <li><Link href="/labs/rd" className="text-slate-600 hover:text-purple-600 transition-colors hover:underline">RD Cutoff Analysis</Link></li>
+                  <li><Link href="/labs/fe" className="text-slate-600 hover:text-purple-600 transition-colors hover:underline">Panel Fixed Effects</Link></li>
                 </ul>
               </div>
 
               {/* Resources */}
               <div>
-                <h3 className="font-semibold text-slate-800 mb-3">Resources</h3>
-                <ul className="space-y-2 text-sm">
-                  <li><Link href="/resources" className="text-slate-600 hover:text-blue-600 transition-colors">Textbooks</Link></li>
-                  <li><Link href="/resources" className="text-slate-600 hover:text-blue-600 transition-colors">Datasets</Link></li>
-                  <li><Link href="/resources" className="text-slate-600 hover:text-blue-600 transition-colors">Software</Link></li>
-                  <li><Link href="/resources" className="text-slate-600 hover:text-blue-600 transition-colors">Papers</Link></li>
+                <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                  <FileText size={18} className="text-emerald-600" />
+                  Learning Resources
+                </h3>
+                <ul className="space-y-3 text-sm">
+                  <li><Link href="/resources#textbooks" className="text-slate-600 hover:text-emerald-600 transition-colors hover:underline">Essential Textbooks</Link></li>
+                  <li><Link href="/resources#datasets" className="text-slate-600 hover:text-emerald-600 transition-colors hover:underline">Practice Datasets</Link></li>
+                  <li><Link href="/resources#software" className="text-slate-600 hover:text-emerald-600 transition-colors hover:underline">Software & Tools</Link></li>
+                  <li><Link href="/ai-stata" className="text-slate-600 hover:text-emerald-600 transition-colors hover:underline">AI Code Generation</Link></li>
+                  <li><Link href="/resources#journals" className="text-slate-600 hover:text-emerald-600 transition-colors hover:underline">Academic Papers</Link></li>
                 </ul>
               </div>
             </div>
 
-            {/* Bottom Bar */}
-            <div className="mt-8 pt-8 border-t border-slate-200/50 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <div className="text-xs text-slate-500">
-                Built with Next.js, TypeScript, and Tailwind CSS. Assisted by ChatGPT and Claude.
-              </div>
-              <div className="flex gap-4 text-xs text-slate-500">
-                <a href="#" className="hover:text-slate-700 transition-colors">Privacy</a>
-                <a href="#" className="hover:text-slate-700 transition-colors">Terms</a>
-                <a href="#" className="hover:text-slate-700 transition-colors">Contact</a>
+            {/* Footer Bottom */}
+            <div className="mt-12 pt-8 border-t border-slate-200/60">
+              <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
+                <div className="text-center lg:text-left">
+                  <div className="text-sm font-medium text-slate-700 mb-1">
+                    © {new Date().getFullYear()} Peking University, National School of Development
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    Econometrics Course Team • Designed by Zhuoxiang Zhou with AI assistance
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-8 text-sm">
+                  <div className="text-slate-500">
+                    Built with Next.js • TypeScript • Tailwind CSS
+                  </div>
+                  <div className="flex gap-6 text-slate-500">
+                    <Link href="#" className="hover:text-slate-700 transition-colors">Privacy Policy</Link>
+                    <Link href="#" className="hover:text-slate-700 transition-colors">Terms of Use</Link>
+                    <Link href="#" className="hover:text-slate-700 transition-colors">Contact</Link>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
