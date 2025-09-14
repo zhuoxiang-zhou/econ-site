@@ -228,8 +228,7 @@ export default function FancyHome() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-xl md:text-2xl text-slate-600 mb-8 leading-relaxed max-w-3xl mx-auto"
           >
-            Master causal inference with interactive labs, AI-powered Stata workflows, 
-            and concept-first explanations designed for modern learners.
+            Welcome to the PKU NSD Econometrics Course Hub!
           </motion.p>
 
           <motion.div
