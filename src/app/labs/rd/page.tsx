@@ -1293,7 +1293,7 @@ if \`analysis_cutoff' == \`true_cutoff' {
     display "SUCCESS: Analyzing at true discontinuity"
 }
 else {
-    display "WARNING: Wrong cutoff - expect weak effect"
+    display "Placebo cutoff - expect weak effect"
 }`;
     
     navigator.clipboard.writeText(stataCode);
@@ -1335,8 +1335,7 @@ else {
             Regression Discontinuity Lab: Gaokao
           </h1>
           <p className="text-lg text-slate-600 max-w-4xl mx-auto">
-            Learn why RD only works when you analyze the TRUE discontinuity. Elite college admission 
-            happens at 580, but you can choose where to look for effects. See what happens when you analyze the wrong cutoff!
+            Learn why RD only works at the true discontinuity. Elite college admission occurs at 580; try a placebo cutoff elsewhere and see how the estimated “effect” disappears or flips.
           </p>
         </motion.div>
 
@@ -1348,7 +1347,7 @@ else {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="lg:col-span-1"
           >
-            <div className="bg-white rounded-xl border border-slate-200 shadow-lg p-6 sticky top-8">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-lg p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-slate-800">Parameters</h2>
                 <button
@@ -1388,7 +1387,7 @@ else {
                     <span>630</span>
                   </div>
                   <p className="text-xs text-slate-600 mt-1">
-                    Try 580 for valid RD, other values for wrong cutoff
+                    Try 580 for valid RD, other values for placebo cutoff
                   </p>
                 </div>
 
@@ -1482,19 +1481,19 @@ else {
                     onClick={() => { setAnalysisCutoff(580); setTrueRDEffect(10); setBandwidth(30); }}
                     className="w-full p-2 text-sm bg-green-100 hover:bg-green-200 text-green-800 rounded-lg transition-colors"
                   >
-                    Correct Analysis (580)
+                    Benchmark Analysis (580)
                   </button>
                   <button
                     onClick={() => { setAnalysisCutoff(560); setTrueRDEffect(8); setBandwidth(40); }}
                     className="w-full p-2 text-sm bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors"
                   >
-                    Wrong Cutoff (560)
+                    Placebo Cutoff (560)
                   </button>
                   <button
                     onClick={() => { setAnalysisCutoff(600); setTrueRDEffect(8); setBandwidth(40); }}
                     className="w-full p-2 text-sm bg-red-100 hover:bg-red-200 text-red-800 rounded-lg transition-colors"
                   >
-                    Wrong Cutoff (600)
+                    Placebo Cutoff (600)
                   </button>
                 </div>
               </div>
@@ -1543,7 +1542,7 @@ else {
                   <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
                     <AlertTriangle size={20} className="text-amber-600 mt-0.5 flex-shrink-0" />
                     <div>
-                      <div className="font-semibold text-amber-800">Wrong Cutoff Analysis</div>
+                      <div className="font-semibold text-amber-800">Placebo Cutoff Analysis</div>
                       <div className="text-sm text-amber-700 mt-1">
                         You&apos;re analyzing at {analysisCutoff} but the true discontinuity is at 580. 
                         RD should find little/no effect because there&apos;s no real jump here.
@@ -1651,7 +1650,7 @@ else {
                 <div>
                   <h4 className="font-medium text-blue-700 mb-2">Why Cutoff Matters</h4>
                   <p className="text-sm text-blue-800">
-                    RD only works when you analyze at the TRUE discontinuity. Analyzing at wrong cutoffs 
+                    RD only works when you analyze at the TRUE discontinuity. Analyzing at placebo cutoffs
                     produces weak/no effects because there&apos;s no actual policy change there.
                   </p>
                 </div>
@@ -1736,7 +1735,7 @@ if abs(\`analysis_cutoff' - \`true_cutoff') <= 5 {
     display "Expect to detect true effect"
 }
 else {
-    display "PROBLEM: Analyzing wrong cutoff"  
+    display "TEST: Analyzing placebo cutoff"  
     display "Expect weak/no effect (false negative)"
 }
 
