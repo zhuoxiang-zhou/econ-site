@@ -132,7 +132,7 @@ reg y i.treat##i.post, vce(robust)
     key: "regression-discontinuity",
     title: "Regression Discontinuity",
     tags: ["RD", "Quasi-experimental"],
-    difficulty: "Advanced",
+    difficulty: "Intermediate",
     icon: "📏",
     intuition:
       "Local randomization at a cutoff yields local treatment effects near the threshold.",
