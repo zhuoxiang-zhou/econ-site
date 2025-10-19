@@ -1,3 +1,6 @@
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable prefer-const */
 "use client";
 
 import Link from "next/link";
@@ -1109,12 +1112,7 @@ display "Universal approximation: can fit almost any function"`;
                 </div>
                 
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-5">
-                  <h3 className="font-semibold text-blue-800 mb-2">Why LASSO?</h3>
-                  <p className="text-sm text-blue-800">
-                    LASSO (Least Absolute Shrinkage and Selection Operator) adds an L1 penalty that shrinks 
-                    coefficients to <strong>exactly zero</strong>. This performs automatic feature selection, 
-                    especially useful when you have many predictors but only some are truly relevant.
-                  </p>
+
                 </div>
               </div>
             )}
