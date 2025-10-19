@@ -12,6 +12,7 @@
     "@mlc-ai/web-llm": "^0.2.79",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.12",
+    "katex": "^0.16.22",
     "lucide-react": "^0.544.0",
     "next": "15.5.3",
     "next-themes": "^0.4.6",

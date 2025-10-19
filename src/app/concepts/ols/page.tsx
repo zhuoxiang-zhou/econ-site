@@ -31,7 +31,7 @@ export default function OLS_SimpleConcept() {
             the line <code>y = β₀ + β₁x + u</code>. Use it to summarize relationships and—under conditions—draw causal conclusions.
           </p>
           <p className="mt-2 text-xs text-slate-500">
-            Adapted in part from the course slide deck (Chapter 2).  [oai_citation:0‡Ch_02_PPT_2024.pdf](file-service://file-HeMyfNQ2oAuATbBL3YRDF3)
+            Adapted in part from the course slide deck.
           </p>
         </motion.div>
 
