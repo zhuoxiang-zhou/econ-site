@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Play, Copy, RefreshCw, Zap, GitBranch, Brain } from "lucide-react";
+import React from "react";
 
 // ============================================================================
 // UTILITY FUNCTIONS
@@ -490,8 +491,8 @@ function TreeVisualization({ tree, maxDepth }: { tree: TreeNode, maxDepth: numbe
     y: number, 
     width: number, 
     depth: number
-  ): JSX.Element[] {
-    const elements: JSX.Element[] = [];
+  ): React.JSX.Element[] {
+    const elements: React.JSX.Element[] = [];
     const nodeKey = `${x}-${y}-${depth}`;
     
     if (node.isLeaf) {
